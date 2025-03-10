@@ -19,7 +19,6 @@ export function sreach() {
       <div className="h-6 w-px bg-gray-500/50"></div>
       <svg
         fill="#6B7280"
-        //   xmlns:xlink="http://www.w3.org/1999/xlink"
         xmlns="http://www.w3.org/2000/svg"
         version="1.1"
         viewBox="0 0 32.00 32.00"
@@ -44,31 +43,33 @@ export function sreach() {
 export default function NavBar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black">
-      <nav aria-label="Main navigation">
-        <ul className="list-none flex justify-between text-white p-4 h-16 items-center border-b">
-          <div className="flex space-x-4 items-center">
-            <li>
-              <Link to="/" aria-label="Home">
-                <AiFillBank size={30} />
-              </Link>
-            </li>
-            <li>
-              <Link to="/" className="hover:text-gray-300 transition-colors">
-                Home
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="/cart"
-                className="hover:text-gray-300 transition-colors"
-              >
-                Cart
-              </Link>
-            </li>
+      <div className="flex h-16 w-[100%] space-x-4 items-center justify-between border-b ">
+        <div className="flex space-x-4 items-center p-4">
+          <div className=" text-white">
+            <Link to={"/"}>
+              <AiFillBank size={30} />
+            </Link>
           </div>
-          <li className="ml-auto">{sreach()}</li>
-        </ul>
-      </nav>
+          <div className=" text-white hover:text-gray-300 transition-colors">
+            <Link to={"/"}>Home</Link>
+          </div>
+          <div className=" text-white hover:text-gray-300 transition-colors">
+            <Link to={"/cart"}>Cart</Link>
+          </div>
+        </div>
+        <div className="flex space-x-7 items-center p-5 ">
+          <div>{sreach()}</div>
+          <div className="flex justify-start space-x-1 items-center h-9 bg-white w-auto text-black rounded-full p-3">
+            <img
+              src="../public/vite.svg"
+              alt=""
+              className="rounded-[50px]
+"
+            />
+            username
+          </div>
+        </div>
+      </div>
     </header>
   );
 }

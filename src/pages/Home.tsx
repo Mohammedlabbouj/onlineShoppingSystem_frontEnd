@@ -34,7 +34,7 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
+  console.log(localStorage.getItem("userEmail"));
   useEffect(() => {
     const getAllProducts = async () => {
       try {

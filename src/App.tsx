@@ -1,24 +1,69 @@
-import React from "react";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { useState, useEffect } from "react";
+import {
+  BrowserRouter,
+  Route,
+  Routes,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import Home from "./pages/Home";
 import Product from "./pages/Product";
 import Cart from "./pages/Cart";
+import Login from "./pages/Loging";
+import Signup from "./pages/SingUp";
 import NavBar from "./components/NavBar";
 
 function App() {
   return (
     <BrowserRouter>
-      <div className="pt-16">
-        {" "}
-        {/* Add padding-top equal to navbar height */}
-        <NavBar />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/product/:id" element={<Product />} />
-          <Route path="/cart" element={<Cart />} />
-        </Routes>
-      </div>
+      <AppContent />
     </BrowserRouter>
+  );
+}
+
+function AppContent() {
+  const [isAuthenticated, setIsAuthenticated] = useState(
+    localStorage.getItem("isAuthenticated") === "true"
+  );
+  const location = useLocation();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedAuth = localStorage.getItem("isAuthenticated") === "true";
+    setIsAuthenticated(storedAuth);
+  }, []);
+  const isAuthPage =
+    location.pathname === "/login" || location.pathname === "/signup";
+  useEffect(() => {
+    document.body.classList.toggle("overflow-hidden", isAuthPage);
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, [isAuthPage]);
+
+  return (
+    <div className="pt-16">
+      {!isAuthPage ? <NavBar /> : null}
+      <Routes>
+        <Route
+          path="/login"
+          element={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/"
+          element={isAuthenticated ? <Home /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/product/:id"
+          element={isAuthenticated ? <Product /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/cart"
+          element={isAuthenticated ? <Cart /> : <Navigate to="/login" />}
+        />
+      </Routes>
+    </div>
   );
 }
 
