@@ -5,6 +5,18 @@ import { useNavigate } from "react-router-dom";
 interface Props {
   setIsAuthenticated: (value: boolean) => void;
 }
+interface UserName {
+  firstname: string; // Note: API uses lowercase 'firstname'
+  lastname: string; // Note: API uses lowercase 'lastname'
+}
+
+interface User {
+  id: number;
+  email: string;
+  username: string;
+  password: string;
+  name: UserName;
+}
 
 export default function Login({ setIsAuthenticated }: Props) {
   const [email, setEmail] = useState("");
@@ -27,18 +39,25 @@ export default function Login({ setIsAuthenticated }: Props) {
 
       const users = await response.json();
       const user = users.find(
-        (user: any) => user.email === email && user.password === password
+        (user: User) => user.email === email && user.password === password
       );
-      console.log("user", user);
+      console.log("user", user.name.firstName);
+      console.log("user", user.name.lastName);
+
       if (user) {
         setIsAuthenticated(true);
         localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("user", user);
+        localStorage.setItem("username", user.username);
+        localStorage.setItem("firstName", user.name.firstname); // Changed from firstName to firstname
+        localStorage.setItem("lastName", user.name.lastname); // Changed from lastName to lastname
+        localStorage.setItem("email", user.email);
+        localStorage.setItem("id", user.id.toString());
         navigate("/");
       } else {
         setError("Invalid email or password");
       }
     } catch (err) {
+      console.error("Login error:", err); // Added error logging
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setIsLoading(false);

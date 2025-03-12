@@ -41,13 +41,15 @@ export function sreach() {
 }
 
 export default function NavBar() {
+  const firstName = localStorage.getItem("firstName");
+  const lastName = localStorage.getItem("lastName");
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-black">
       <div className="flex h-16 w-[100%] space-x-4 items-center justify-between border-b ">
         <div className="flex space-x-4 items-center p-4">
           <div className=" text-white">
             <Link to={"/"}>
-              <AiFillBank size={30} />
+              <AiFillBank size={50}  />
             </Link>
           </div>
           <div className=" text-white hover:text-gray-300 transition-colors">
@@ -59,14 +61,14 @@ export default function NavBar() {
         </div>
         <div className="flex space-x-7 items-center p-5 ">
           <div>{sreach()}</div>
-          <div className="flex justify-start space-x-1 items-center h-9 bg-white w-auto text-black rounded-full p-3">
+          <div className="flex justify-start space-x-1 gap-1 items-center h-10 bg-white w-auto text-black rounded-[50px] p-3">
             <img
-              src="../public/vite.svg"
+              src="../public/user.svg"
               alt=""
-              className="rounded-[50px]
-"
+              className="rounded-[50px]  w-[39px] h-[39px] "
             />
-            username
+            {firstName}
+            {lastName}
           </div>
         </div>
       </div>
