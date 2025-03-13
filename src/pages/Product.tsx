@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Loading from "../components/Loading";
-
+import AddButton from "../components/Button";
+import RemoveButton from "../components/Button";
 export interface ProductType {
   id: number;
   title: string;
@@ -10,12 +11,12 @@ export interface ProductType {
   category: string;
   image: string;
 }
-interface CartProduct {
+export interface CartProduct {
   productId: number; // Changed from productsId to match API response
   quantity: number;
 }
 
-interface Cart {
+export interface Cart {
   id: number;
   userId: number;
   date: string;
@@ -116,6 +117,7 @@ export default function Product() {
   if (isLoading) return <Loading />;
   if (error) return <div>Error: {error}</div>;
   if (!product) return <div>Product not found</div>;
+
   const handelRemoveProductFromCart = async () => {
     const userId = localStorage.getItem("id");
     if (!userId) {
@@ -162,19 +164,12 @@ export default function Product() {
           <p className="text-3xl font-bold">${product.price}</p>
           <div>
             {addedToCart ? (
-              <button
+              <RemoveButton
+                value="Remove from cart"
                 onClick={handelRemoveProductFromCart}
-                className="mt-4 bg-black border border-white text-white px-4 py-2 rounded hover:bg-white hover:text-black hover:border-black transition-colors"
-              >
-                remove from cart
-              </button>
+              />
             ) : (
-              <button
-                onClick={handleAddToCart}
-                className="mt-4 bg-black border border-white text-white px-4 py-2 rounded hover:bg-white hover:text-black hover:border-black transition-colors"
-              >
-                Add to cart
-              </button>
+              <AddButton value="Add to cart" onClick={handleAddToCart} />
             )}
           </div>
         </div>
