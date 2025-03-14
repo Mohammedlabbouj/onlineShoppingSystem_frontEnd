@@ -41,9 +41,13 @@ function AppContent() {
     };
   }, [isAuthPage]);
 
+  const handleLogout = () => {
+    localStorage.removeItem("isAuthenticated");
+    setIsAuthenticated(false);
+  };
   return (
     <div className="pt-16">
-      {!isAuthPage ? <NavBar /> : null}
+      {!isAuthPage ? <NavBar handleLogout={handleLogout} /> : null}
       <Routes>
         <Route
           path="/login"
