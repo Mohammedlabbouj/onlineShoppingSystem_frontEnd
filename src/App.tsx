@@ -12,12 +12,15 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Loging";
 import Signup from "./pages/SingUp";
 import NavBar from "./components/NavBar";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

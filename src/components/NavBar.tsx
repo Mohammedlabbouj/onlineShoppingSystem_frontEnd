@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { AiFillBank } from "react-icons/ai";
+import { useTheme } from "../context/ThemeContext"; // Update this line
 
 export function sreach() {
   const [search, setSearch] = React.useState("");
@@ -41,101 +42,49 @@ export function sreach() {
 }
 
 function Toggleswitch() {
-  const [theme, setTheme] = React.useState("dark");
-
+  const { theme, setTheme } = useTheme();
   return (
-    <div className="flex items-center p-[2px] border border-solid border-zinc-500 rounded-full w-max">
+    <div className="flex items-center p-[2px] border border-solid border-zinc-500 rounded-full w-[120px] justify-between">
       <button
-        className="inline-flex items-center justify-center ring-offset-zinc-400 transition-colors text-zinc-500 hover:text-black focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:text-black w-[var(--sz)] h-[var(--sz)] min-w-[var(--sz)] min-h-[var(--sz)] max-w-[var(--sz)] max-h-[var(--sz)] [--sz:28px] p-0.5 rounded-full hover:bg-transparent data-[state=active]:bg-zinc-600/30 data-[state=active]:text-black"
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+          theme === "light" ? "bg-black text-white" : "hover:text-black"
+        }`}
         aria-label="light"
-        onClick={() => {
-          setTheme("light");
-        }}
-        data-state={theme === "light" ? "active" : ""}
-        role="button"
-        type="button"
+        onClick={() => setTheme("light")}
       >
         <svg
-          data-initial="icon-theme-sync"
-          width="14px"
-          height="14px"
-          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
           viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          stroke="currentColor"
           fill="none"
+          stroke="currentColor"
         >
-          <path d="M14.828 14.828a4 4 0 1 0 -5.656 -5.656a4 4 0 0 0 5.656 5.656z"></path>
-          <g data-g="high">
-            <path d="M4 12h-3"></path>
-            <path d="M12 4v-3"></path>
-            <path d="M20 12h3"></path>
-            <path d="M12 20v3"></path>
-          </g>
-          <g data-g="low">
-            <path d="M6.343 17.657l-1.414 1.414"></path>
-            <path d="M6.343 6.343l-1.414 -1.414"></path>
-            <path d="M17.657 6.343l1.414 -1.414"></path>
-            <path d="M17.657 17.657l1.414 1.414"></path>
-          </g>
+          <path d="M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z" />
+          <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
         </svg>
       </button>
 
       <button
-        className="inline-flex items-center justify-center ring-offset-zinc-400 transition-colors text-zinc-500 hover:text-black focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:text-black w-[var(--sz)] h-[var(--sz)] min-w-[var(--sz)] min-h-[var(--sz)] max-w-[var(--sz)] max-h-[var(--sz)] [--sz:28px] p-0.5 rounded-full hover:bg-transparent data-[state=active]:bg-zinc-600/30 data-[state=active]:text-black"
-        aria-label="system"
-        onClick={() => setTheme("system")}
-        data-state={theme === "system" ? "active" : ""}
-        role="button"
-        type="button"
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+          theme === "github" ? "bg-[#0d1117] text-white" : "hover:text-black"
+        }`}
+        aria-label="github"
+        onClick={() => setTheme("github")}
       >
-        <svg
-          data-initial="icon-theme-sync"
-          width="14px"
-          height="14px"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="2"
-          stroke="currentColor"
-          fill="none"
-        >
-          <path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"></path>
-          <path d="M10 19v-3.96 3.15"></path>
-          <path d="M7 19h5"></path>
-          <rect rx="2" y="12" x="16" height="10" width="6"></rect>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.295 2.747-1.026 2.747-1.026.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.137 20.167 22 16.42 22 12c0-5.523-4.477-10-10-10z" />
         </svg>
       </button>
 
       <button
-        className="inline-flex items-center justify-center ring-offset-zinc-400 transition-colors text-zinc-500 hover:text-black focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 disabled:pointer-events-none disabled:opacity-50 data-[state=on]:text-black w-[var(--sz)] h-[var(--sz)] min-w-[var(--sz)] min-h-[var(--sz)] max-w-[var(--sz)] max-h-[var(--sz)] [--sz:28px] p-0.5 rounded-full hover:bg-transparent data-[state=active]:bg-zinc-600/30 data-[state=active]:text-black"
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+          theme === "dark" ? "bg-[#0d1117] text-white" : "hover:text-black"
+        }`}
         aria-label="dark"
         onClick={() => setTheme("dark")}
-        data-state={theme === "dark" ? "active" : ""}
-        role="button"
-        type="button"
       >
-        <svg
-          data-initial="icon-theme-sync"
-          width="14px"
-          height="14px"
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          stroke-linejoin="round"
-          stroke-linecap="round"
-          stroke-width="0"
-          stroke="currentColor"
-          fill="none"
-        >
-          <path
-            d="m4.8.69c0-.38-.31-.69-.69-.69s-.69.31-.69.69v1.03h-1.03c-.38,0-.69.31-.69.69s.31.69.69.69h1.03v1.03c0,.38.31.69.69.69s.69-.31.69-.69v-1.03h1.03c.38,0,.69-.31.69-.69s-.31-.69-.69-.69h-1.03V.69Zm5.14,5.14c0-.38-.31-.69-.69-.69s-.69.31-.69.69v1.03h-1.03c-.38,0-.69.31-.69.69s.31.69.69.69h1.03v1.03c0,.38.31.69.69.69s.69-.31.69-.69v-1.03h1.03c.38,0,.69-.31.69-.69s-.31-.69-.69-.69h-1.03v-1.03Zm-6.86,5.14c0-.38-.31-.69-.69-.69s-.69.31-.69.69v1.03H.69c-.38,0-.69.31-.69.69s.31.69.69.69h1.03v1.03c0,.38.31.69.69.69s.69-.31.69-.69v-1.03h1.03c.38,0,.69-.31.69-.69s-.31-.69-.69-.69h-1.03v-1.03ZM14.47,1.51l-.51-.07c-.37-.04-.58.38-.37.69.24.35.46.71.67,1.08.86,1.59,1.35,3.42,1.35,5.36,0,5.61-4.08,10.26-9.43,11.16-.41.07-.84.12-1.27.14-.37.02-.57.45-.31.71.12.12.24.24.36.35l.12.11.45.39.32.25.21.15.32.22.3.2c.21.13.42.25.64.37l.45.23.45.2.52.21.42.15c.23.08.46.14.7.21.18.05.36.09.54.13.22.04.43.08.65.12l.54.07.46.04c.22.01.44.02.66.02,6.25,0,11.31-5.07,11.31-11.31,0-.43-.02-.85-.07-1.27l-.06-.48c-.06-.38-.14-.76-.23-1.13-.12-.44-.26-.88-.43-1.3l-.19-.46-.13-.28-.13-.26c-.27-.53-.58-1.03-.93-1.51l-.26-.34-.34-.41-.28-.31-.2-.21-.28-.27-.38-.34-.55-.45-.42-.3-.5-.33-.55-.32-.56-.28-.19-.09-.41-.17-.47-.18-.43-.14-.56-.15-.45-.1-.5-.09Zm3.19,7.4c0-1.76-.35-3.43-.98-4.96,3.31,1.52,5.61,4.86,5.61,8.73,0,5.3-4.3,9.6-9.6,9.6-1.49,0-2.89-.34-4.15-.94,2.5-.79,4.67-2.3,6.27-4.3.23.32.61.53,1.04.53.71,0,1.29-.58,1.29-1.29,0-.61-.43-1.12-1-1.25.11-.2.21-.4.3-.61.33.2.71.32,1.13.32,1.18,0,2.14-.96,2.14-2.14s-.96-2.14-2.14-2.14c.06-.51.09-1.02.09-1.54Z"
-            fill="currentColor"
-            clip-rule="evenodd"
-            fill-rule="evenodd"
-          ></path>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M21.53 15.93c-.16-.27-.61-.69-1.73-.49a8.46 8.46 0 01-1.88.13 8.409 8.409 0 01-5.91-2.82 8.068 8.068 0 01-1.44-8.66c.44-1.01.13-1.54-.09-1.76s-.77-.55-1.83-.11a10.318 10.318 0 00-6.32 10.21 10.475 10.475 0 007.04 8.99 10 10 0 002.89.55c.16.01.32.02.48.02a10.5 10.5 0 008.47-4.27c.67-.93.49-1.519.32-1.79z" />
         </svg>
       </button>
     </div>
@@ -179,12 +128,13 @@ function Dropdown({ onClick, handelLogout }: DropdownProps) {
           </Link>
         </li>
       </ul>
-      <div 
-      onClick={handelLogout}
-      className="
+      <div
+        onClick={handelLogout}
+        className="
       hover:cursor-pointer
-      py-2 block px-4  text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-          Sign out
+      py-2 block px-4  text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+      >
+        Sign out
       </div>
     </div>
   );
@@ -205,7 +155,10 @@ export default function NavBar({ handleLogout }: NavBarProps) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-black">
-        <div className="flex h-16 w-[100%] space-x-4 items-center justify-between border-b ">
+        <div
+          // onClick={() => setIsDropdownOpen(false)}
+          className="flex h-16 w-[100%] space-x-4 items-center justify-between border-b "
+        >
           <div className="flex space-x-4 items-center p-4">
             <div onClick={handleDropdown} className=" text-white">
               <Link to={"/"}>
@@ -213,7 +166,9 @@ export default function NavBar({ handleLogout }: NavBarProps) {
               </Link>
             </div>
             <div
-              onClick={handleDropdown}
+              onClick={() => {
+                setIsDropdownOpen(false);
+              }}
               className=" text-white hover:text-gray-300 transition-colors"
             >
               <Link to={"/"}>Home</Link>
@@ -266,7 +221,7 @@ export function UserInfo({ firstName, lastName, onClick }: prop) {
           src="../../public/user.svg"
           alt="user photo"
         />
-        <span className="hidden md:inline-block">
+        <span className=" text-white md:inline-block">
           {firstName} {lastName}
         </span>
         <svg
