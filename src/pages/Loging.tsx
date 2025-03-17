@@ -1,21 +1,17 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
   setIsAuthenticated: (value: boolean) => void;
 }
-interface UserName {
-  firstname: string; // Note: API uses lowercase 'firstname'
-  lastname: string; // Note: API uses lowercase 'lastname'
-}
+
 
 interface User {
-  id: number;
+  customerId: number;
   email: string;
   username: string;
   password: string;
-  name: UserName;
 }
 
 export default function Login({ setIsAuthenticated }: Props) {
@@ -32,37 +28,66 @@ export default function Login({ setIsAuthenticated }: Props) {
     setIsLoading(true);
 
     try {
-      const response = await fetch("https://fakestoreapi.com/users");
+      const response = await fetch("http://localhost:9090/api/customers/all", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        credentials: "include", // Include cookies if needed
+        mode: "cors", // Explicitly set CORS mode
+      });
+
       if (!response.ok) {
-        throw new Error("Network response was not ok");
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Failed to authenticate");
       }
 
       const users = await response.json();
+      console.log(users)
       const user = users.find(
         (user: User) => user.email === email && user.password === password
       );
-      console.log("user", user.name.firstName);
-      console.log("user", user.name.lastName);
+      console.log(user.customerId);
 
-      if (user) {
-        setIsAuthenticated(true);
-        localStorage.setItem("isAuthenticated", "true");
-        localStorage.setItem("username", user.username);
-        localStorage.setItem("firstName", user.name.firstname); // Changed from firstName to firstname
-        localStorage.setItem("lastName", user.name.lastname); // Changed from lastName to lastname
-        localStorage.setItem("email", user.email);
-        localStorage.setItem("id", user.id.toString());
-        navigate("/");
-      } else {
-        setError("Invalid email or password");
+      if (!user) {
+        throw new Error("Invalid email or password");
       }
+
+      // Store user data in localStorage
+      setIsAuthenticated(true);
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("username", user.username);
+      localStorage.setItem("email", user.email);
+      localStorage.setItem("id", user.customerId);
+
+      navigate("/");
     } catch (err) {
-      console.error("Login error:", err); // Added error logging
-      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error("Login error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to connect to server"
+      );
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Add this function to your Login component
+  const checkApiStatus = async () => {
+    try {
+      const response = await fetch("http://localhost:9090/api/health");
+      if (!response.ok) {
+        console.error("API is not responding correctly");
+      }
+    } catch (err) {
+      console.error("Cannot connect to API:", err);
+    }
+  };
+
+  // Add this useEffect to check API status when component mounts
+  useEffect(() => {
+    checkApiStatus();
+  }, []);
 
   return (
     <div className="flex flex-col items-center  h-screen bg-black">

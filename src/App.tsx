@@ -12,6 +12,7 @@ import Cart from "./pages/Cart";
 import Login from "./pages/Loging";
 import Signup from "./pages/SingUp";
 import NavBar from "./components/NavBar";
+import AddProduct from "./pages/AddProduct";
 import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
@@ -55,6 +56,10 @@ function AppContent() {
         <Route
           path="/login"
           element={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
+        <Route
+          path="/AddProduct"
+          element={isAuthenticated ? <AddProduct /> : <Navigate to="/login" />}
         />
         <Route path="/signup" element={<Signup />} />
         <Route

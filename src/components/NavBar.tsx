@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { AiFillBank } from "react-icons/ai";
 import { useTheme } from "../context/ThemeContext"; // Update this line
 
-export function sreach() {
+function sreach() { 
   const [search, setSearch] = React.useState("");
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     setSearch(event.target.value);
@@ -46,7 +46,7 @@ function Toggleswitch() {
   return (
     <div className="flex items-center p-[2px] border border-solid border-zinc-500 rounded-full w-[120px] justify-between">
       <button
-        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 text-gray-700 focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
           theme === "light" ? "bg-black text-white" : "hover:text-black"
         }`}
         aria-label="light"
@@ -65,7 +65,7 @@ function Toggleswitch() {
       </button>
 
       <button
-        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 text-gray-700 focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
           theme === "github" ? "bg-[#0d1117] text-white" : "hover:text-black"
         }`}
         aria-label="github"
@@ -77,7 +77,7 @@ function Toggleswitch() {
       </button>
 
       <button
-        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
+        className={`inline-flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-1 text-gray-700 focus-visible:ring-offset-1 w-[32px] h-[32px] rounded-full ${
           theme === "dark" ? "bg-[#0d1117] text-white" : "hover:text-black"
         }`}
         aria-label="dark"
@@ -96,8 +96,6 @@ interface DropdownProps {
   handelLogout: () => void;
 }
 function Dropdown({ onClick, handelLogout }: DropdownProps) {
-  const firstName = localStorage.getItem("firstName");
-  const lastName = localStorage.getItem("lastName");
   const email = localStorage.getItem("email");
 
   return (
@@ -106,10 +104,19 @@ function Dropdown({ onClick, handelLogout }: DropdownProps) {
         <Toggleswitch />
       </div>
       <div className="px-4 py-3 text-sm text-black">
-        <div className="font-medium">{`${firstName} ${lastName}`}</div>
         <div className="truncate text-gray-500">{email}</div>
       </div>
       <ul className="py-2 text-sm text-gray-700">
+        
+        <li>
+          <Link
+            to="/AddProduct"
+            className="block px-4 py-2 hover:bg-gray-100 transition-colors"
+            onClick={onClick}
+          >
+            AddProduct
+          </Link>
+        </li>
         <li>
           <Link
             to="/cart"
@@ -144,8 +151,7 @@ interface NavBarProps {
   handleLogout: () => void;
 }
 export default function NavBar({ handleLogout }: NavBarProps) {
-  const firstName = localStorage.getItem("firstName");
-  const lastName = localStorage.getItem("lastName");
+  const username = localStorage.getItem("username");
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
 
   function handleDropdown() {
@@ -160,7 +166,7 @@ export default function NavBar({ handleLogout }: NavBarProps) {
           className="flex h-16 w-[100%] space-x-4 items-center justify-between border-b "
         >
           <div className="flex space-x-4 items-center p-4">
-            <div onClick={handleDropdown} className=" text-white">
+            <div onClick={()=> setIsDropdownOpen(false)} className=" text-white">
               <Link to={"/"}>
                 <AiFillBank size={50} />
               </Link>
@@ -178,8 +184,7 @@ export default function NavBar({ handleLogout }: NavBarProps) {
             <div>{sreach()}</div>
             <div>
               <UserInfo
-                firstName={firstName || ""}
-                lastName={lastName || ""}
+                username={username || ""}
                 onClick={handleDropdown}
               />
             </div>
@@ -201,11 +206,10 @@ export default function NavBar({ handleLogout }: NavBarProps) {
 }
 
 interface prop {
-  firstName: string;
-  lastName: string;
+  username: string;
   onClick: () => void;
 }
-export function UserInfo({ firstName, lastName, onClick }: prop) {
+export function UserInfo({ username, onClick }: prop) {
   return (
     <>
       <button
@@ -222,7 +226,7 @@ export function UserInfo({ firstName, lastName, onClick }: prop) {
           alt="user photo"
         />
         <span className=" text-white md:inline-block">
-          {firstName} {lastName}
+          {username}
         </span>
         <svg
           className="w-2.5 h-2.5 ms-3"
