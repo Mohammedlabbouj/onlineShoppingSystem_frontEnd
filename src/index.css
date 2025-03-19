@@ -2,25 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: #ffffff;
-    --text: #000000;
-  }
-
-  .dark {
-    --background: #000000;
-    --text: #ffffff;
-  }
-
-  .github {
-    --background: #0d1117;
-    --text: #c9d1d9;
-  }
-
-  body {
-    @apply bg-[var(--background)] text-[var(--text)];
-  }
+body {
+  margin: 5px;
+  background-color: black;
+  color: #ffffff;
 }
 
 /* From Uiverse.io by satyamchaudharydev */

@@ -13,15 +13,12 @@ import Login from "./pages/Loging";
 import Signup from "./pages/SingUp";
 import NavBar from "./components/NavBar";
 import AddProduct from "./pages/AddProduct";
-import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <ThemeProvider>
       <BrowserRouter>
         <AppContent />
       </BrowserRouter>
-    </ThemeProvider>
   );
 }
 
