@@ -16,9 +16,9 @@ import AddProduct from "./pages/AddProduct";
 
 function App() {
   return (
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
@@ -27,7 +27,6 @@ function AppContent() {
     localStorage.getItem("isAuthenticated") === "true"
   );
   const location = useLocation();
-  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const storedAuth = localStorage.getItem("isAuthenticated") === "true";
@@ -48,7 +47,7 @@ function AppContent() {
   };
   return (
     <div className="pt-16">
-      {!isAuthPage ? <NavBar handleLogout={handleLogout} /> : null}
+      {!isAuthPage ? <NavBar /> : null}
       <Routes>
         <Route
           path="/login"

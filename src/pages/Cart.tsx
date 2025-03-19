@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import Loading from "../components/Loading";
 import RemoveButton from "../components/Button";
-import { ProductType } from "./Product";
 interface CartProduct {
   productId: number;
   quantity: number;
