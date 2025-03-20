@@ -16,9 +16,10 @@ import AddProduct from "./pages/AddProduct";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AppContent />
-    </BrowserRouter>
+      <BrowserRouter>
+        <AppContent />
+      </BrowserRouter>
+    
   );
 }
 

@@ -37,7 +37,7 @@ export default function Cart() {
   useEffect(() => {
     const fetchCartAndProducts = async () => {
       const userId = localStorage.getItem("id");
-      console.log(userId)
+      console.log(userId);
       if (!userId) {
         setIsLoading(false);
         return;
