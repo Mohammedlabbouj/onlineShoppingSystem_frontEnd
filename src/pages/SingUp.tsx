@@ -116,17 +116,17 @@ const Signup = () => {
         console.log("Created vendor:", vendor); // Debug log
 
         // Ensure we have a vendor_id before proceeding
-        // if (!vendor.vendor_id) {
-        //   throw new Error("Vendor ID not received from server");
-        // }
+        if (!vendor.vendorId) {
+          throw new Error("Vendor ID not received from server");
+        }
 
         // Then create the vendor profile
         const vendorProfile = {
-          store_name: formDataVendor.username,
+          storeName: formDataVendor.username,
           description: formDataVendor.description,
-          store_image: formDataVendor.store_image,
+          storeImage: formDataVendor.store_image,
           rating: 0,
-          vendor_id: vendor.vendor_id,
+          vendor: { vendorId : vendor.vendorId},
         };
 
         console.log("Sending vendor profile:", vendorProfile); // Debug log
