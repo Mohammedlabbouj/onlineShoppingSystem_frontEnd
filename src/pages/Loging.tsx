@@ -34,8 +34,8 @@ export default function Login({ setIsAuthenticated }: Props) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        credentials: "include", // Include cookies if needed
-        mode: "cors", // Explicitly set CORS mode
+        // credentials: "include", // Include cookies if needed
+        // mode: "cors", // Explicitly set CORS mode
       });
 
       if (!response.ok) {
@@ -72,31 +72,15 @@ export default function Login({ setIsAuthenticated }: Props) {
     }
   };
 
-  // Add this function to your Login component
-  const checkApiStatus = async () => {
-    try {
-      const response = await fetch("http://localhost:9090/api/health");
-      if (!response.ok) {
-        console.error("API is not responding correctly");
-      }
-    } catch (err) {
-      console.error("Cannot connect to API:", err);
-    }
-  };
-
-  // Add this useEffect to check API status when component mounts
-  useEffect(() => {
-    checkApiStatus();
-  }, []);
-
-  return (
-    <div className="flex flex-col items-center  h-screen bg-black">
-      <div className="w-full max-w-md bg-black rounded-lg p-6 shadow-[0_0_50px_-12px_rgba(255,255,255,0.25)]">
-        <h2 className="text-2xl font-bold text-white mb-4">Login</h2>
+return (
+    <div className="flex flex-col items-center h-screen bg-white">
+      <h1 className="text-4xl font-bold text-black mt-8">QUICK <span className="text-green-500">CART</span></h1>
+      <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg mt-6 border border-gray-300">
+        <h2 className="text-2xl font-bold text-black mb-4 text-center">Login</h2>
         <form className="flex flex-col" onSubmit={handleLogin}>
           <input
             placeholder="Email address"
-            className="bg-white text-black border-2 border-black rounded-md p-2 mb-4 focus:outline-none focus:ring-1 focus:ring-black transition ease-in-out duration-150"
+            className="bg-white text-black border border-gray-300 rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -104,44 +88,39 @@ export default function Login({ setIsAuthenticated }: Props) {
           />
           <input
             placeholder="Password"
-            className="bg-white text-black border-2 border-black rounded-md p-2 mb-4 focus:outline-none focus:ring-1 focus:ring-black transition ease-in-out duration-150"
+            className="bg-white text-black border border-gray-300 rounded-md p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-green-500"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
           <div className="flex items-center justify-between flex-wrap">
-            <label className="text-sm text-white cursor-pointer">
+            <label className="text-sm text-black cursor-pointer">
               <input
-                className="mr-2 accent-white"
+                className="mr-2 accent-green-500"
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
               Remember me
             </label>
-            <a className="text-sm text-white hover:underline mb-0.5" href="#">
+            <a className="text-sm text-green-500 hover:underline" href="#">
               Forgot password?
             </a>
-            <p className="text-white mt-4 w-full">
-              Don't have an account?{" "}
-              <Link to={"/signup"}>
-                <div className="text-sm text-white hover:underline inline">
-                  Signup
-                </div>
-              </Link>
-            </p>
           </div>
           <button
-            className={`w-full bg-white text-black border-2 border-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-black hover:text-white transition ease-in-out duration-150 ${
-              isLoading ? "opacity-50 cursor-not-allowed" : ""
-            }`}
+            className={`w-full bg-green-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-green-600 transition ease-in-out duration-150 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
-
+          <p className="text-black mt-4 text-center">
+            Don't have an account? {" "}
+            <Link to="/signup" className="text-green-500 hover:underline">
+              Sign up
+            </Link>
+          </p>
           {error && (
             <div className="mt-4 text-red-500 text-sm text-center">{error}</div>
           )}

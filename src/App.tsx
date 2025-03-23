@@ -16,10 +16,9 @@ import AddProduct from "./pages/AddProduct";
 
 function App() {
   return (
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
 
@@ -47,7 +46,13 @@ function AppContent() {
     setIsAuthenticated(false);
   };
   return (
-    <div className="pt-16">
+    <div
+      className={
+        location.pathname == "/login" || location.pathname == "/signup"
+          ? ""
+          : "pt-16"
+      }
+    >
       {!isAuthPage ? <NavBar /> : null}
       <Routes>
         <Route

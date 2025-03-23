@@ -142,6 +142,7 @@ export default function Cart() {
               </p>
             </div>
             <RemoveButton
+              className="bg-black"
               value="Remove"
               onClick={() => {
                 setProductId(item.productId);
