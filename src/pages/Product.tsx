@@ -4,12 +4,12 @@ import Loading from "../components/Loading";
 import AddButton from "../components/Button";
 import RemoveButton from "../components/Button";
 export interface ProductType {
-  id: number;
-  title: string;
-  price: number;
+  productId: number;
+  name: string;
   description: string;
-  category: string;
+  price: number;
   image: string;
+
 }
 export interface CartProduct {
   productId: number; // Changed from productsId to match API response
@@ -46,7 +46,7 @@ export default function Product() {
 
       // Check if any product in the cart matches our current product id
       const isInCart = data.products.some((p) => {
-        return p.productId === Number(product?.id);
+        return p.productId === Number(product?.productId);
       });
 
       setAddedToCart(isInCart);
@@ -74,7 +74,7 @@ export default function Product() {
           userId: parseInt(userId),
           products: [
             {
-              productId: product.id,
+              productId: product.productId,
               quantity: 1,
             },
           ],
@@ -97,7 +97,16 @@ export default function Product() {
     const getProduct = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+        const response = await fetch(
+          `http://localhost:9090/api/products/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
         if (!response.ok) {
           throw new Error("Failed to fetch product");
         }
@@ -131,7 +140,7 @@ export default function Product() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          productId: product.id,
+          productId: product.productId,
         }),
       });
 
@@ -147,29 +156,32 @@ export default function Product() {
     }
   };
 
-  handelIsProductInCart();
+  // handelIsProductInCart();
   return (
     <div className="container mx-auto px-4 py-8 pt-20">
       <div className="grid md:grid-cols-2 gap-8">
         <div className="w-full">
           <img
             src={product.image}
-            alt={product.title}
+            alt={product.name}
             className="w-full h-[400px] object-contain"
           />
         </div>
         <div>
-          <h1 className="text-2xl font-bold mb-4">{product.title}</h1>
+          <h1 className="text-2xl font-bold mb-4">{product.name}</h1>
           <p className="text-gray-600 mb-4">{product.description}</p>
           <p className="text-3xl font-bold">${product.price}</p>
           <div>
             {addedToCart ? (
               <RemoveButton
+                className="bg-red-700"
                 value="Remove from cart"
                 onClick={handelRemoveProductFromCart}
               />
             ) : (
-              <AddButton value="Add to cart" onClick={handleAddToCart} />
+              <AddButton 
+              className="bg-green-700"
+              value="Add to cart" onClick={handleAddToCart} />
             )}
           </div>
         </div>

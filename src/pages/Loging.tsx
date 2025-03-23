@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
@@ -6,12 +6,13 @@ interface Props {
   setIsAuthenticated: (value: boolean) => void;
 }
 
-
-interface User {
+export interface User {
   customerId: number;
   email: string;
   username: string;
   password: string;
+  sex: string;
+  age: number;
 }
 
 export default function Login({ setIsAuthenticated }: Props) {
@@ -44,22 +45,24 @@ export default function Login({ setIsAuthenticated }: Props) {
       }
 
       const users = await response.json();
-      console.log(users)
-      const user = users.find(
+      console.log(users);
+      const user: User = users.find(
         (user: User) => user.email === email && user.password === password
       );
-      console.log(user.customerId);
-
+      
       if (!user) {
         throw new Error("Invalid email or password");
       }
+      console.log(user.customerId);
 
       // Store user data in localStorage
       setIsAuthenticated(true);
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("username", user.username);
       localStorage.setItem("email", user.email);
-      localStorage.setItem("id", user.customerId);
+      localStorage.setItem("id", String(user.customerId));
+      localStorage.setItem("gander", user.sex);
+      localStorage.setItem("age", String(user.age));
 
       navigate("/");
     } catch (err) {
@@ -72,11 +75,15 @@ export default function Login({ setIsAuthenticated }: Props) {
     }
   };
 
-return (
+  return (
     <div className="flex flex-col items-center h-screen bg-white">
-      <h1 className="text-4xl font-bold text-black mt-8">QUICK <span className="text-green-500">CART</span></h1>
+      <h1 className="text-4xl font-bold text-black mt-8">
+        QUICK <span className="text-green-500">CART</span>
+      </h1>
       <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg mt-6 border border-gray-300">
-        <h2 className="text-2xl font-bold text-black mb-4 text-center">Login</h2>
+        <h2 className="text-2xl font-bold text-black mb-4 text-center">
+          Login
+        </h2>
         <form className="flex flex-col" onSubmit={handleLogin}>
           <input
             placeholder="Email address"
@@ -109,14 +116,16 @@ return (
             </a>
           </div>
           <button
-            className={`w-full bg-green-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-green-600 transition ease-in-out duration-150 ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+            className={`w-full bg-green-500 text-white font-bold py-2 px-4 rounded-md mt-4 hover:bg-green-600 transition ease-in-out duration-150 ${
+              isLoading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
             type="submit"
             disabled={isLoading}
           >
             {isLoading ? "Logging in..." : "Login"}
           </button>
           <p className="text-black mt-4 text-center">
-            Don't have an account? {" "}
+            Don't have an account?{" "}
             <Link to="/signup" className="text-green-500 hover:underline">
               Sign up
             </Link>
