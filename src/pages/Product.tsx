@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
 import Loading from "../components/Loading";
-// import xboxControllerImage from "../assets/xbox-controller.png";
 
 interface Review {
   reviewId: number;
@@ -18,6 +17,12 @@ export interface ProductType {
   description: string;
   price: number;
   image: string;
+}
+
+// Add this interface near your other interfaces
+interface ReviewFormData {
+  rating: number;
+  comment: string;
 }
 
 export default function ProductDetail() {
@@ -108,6 +113,7 @@ export default function ProductDetail() {
                 name: product.name,
                 price: product.price,
                 description: product.description,
+                productId: Number(id),
               }}
               reviews={productReviews}
             />
@@ -180,11 +186,15 @@ interface ProductInfoProps {
     name: string;
     price: number;
     description: string;
+    productId: number;
   };
   reviews: Review[];
 }
 
 function ProductInfo({ product, reviews }: ProductInfoProps) {
+  const [popUp, setPopUp] = useState(false);
+  console.log(product.productId);
+
   return (
     <Card className="p-6">
       <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
@@ -217,9 +227,20 @@ function ProductInfo({ product, reviews }: ProductInfoProps) {
             {reviews.length} Rating
           </span>
         </div>
-        <button className="text-sm text-primary hover:underline">
-          ask a review
+        <button
+          onClick={() => {
+            setPopUp(!popUp);
+          }}
+          className="text-sm text-primary hover:underline"
+        >
+          add your review
         </button>
+        {popUp ? (
+          <ReviewPopup
+            onClose={() => setPopUp(false)}
+            productId={product.productId}
+          />
+        ) : null}
       </div>
 
       <div className="border-t pt-4">
@@ -277,5 +298,105 @@ function ProductImage({ product }: ProductImageProp) {
         />
       </Card>
     </>
+  );
+}
+
+function ReviewPopup({
+  onClose,
+  productId,
+}: {
+  onClose: () => void;
+  productId?: number;
+}) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("http://localhost:9090/api/reviews/create", {
+        
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          product: {
+            productId,
+          },
+          rating,
+          comment,
+          customer: {
+            customerId: Number(localStorage.getItem("id")), // Assuming you store user ID in localStorage
+          },
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to submit review");
+
+      onClose();
+    } catch (error) {
+      console.error("Error submitting review:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96 max-w-[90%]">
+        <h2 className="text-xl font-bold mb-4">Write a Review</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block mb-2">Rating</label>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  className={`h-6 w-6 cursor-pointer ${
+                    star <= rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "fill-gray-200 text-gray-200"
+                  }`}
+                  onClick={() => setRating(star)}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-4">
+            <label className="block mb-2">Comment</label>
+            <textarea
+              className="w-full p-2 border rounded-md"
+              rows={4}
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-primary"
+              disabled={isSubmitting || rating === 0}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Review"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
+import { getCartId } from "@/functions/CartFunctions";
 interface CartItem {
   id: number;
   name: string;
@@ -29,6 +30,13 @@ export default function CartPage() {
         "https://cdn.shoplightspeed.com/shops/608356/files/21440878/nike-nike-sportswear-club-fleece-pullover-hoodie-b.jpg",
     },
   ]);
+
+  useEffect(() => {
+    const hello = () => {
+      let id = getCartId();
+    };
+    hello();
+  }, []);
 
   const updateQuantity = (id: number, newQuantity: number) => {
     if (newQuantity < 1) return;

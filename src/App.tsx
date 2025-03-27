@@ -31,7 +31,7 @@ interface Product {
   description: string;
   stock: number;
   rating: number;
-  reviews: string[]; // or a more complex type if needed
+  reviews: string[];
 }
 
 const sampleProduct = {
