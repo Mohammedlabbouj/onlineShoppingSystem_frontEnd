@@ -4,11 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
 import Loading from "../components/Loading";
+import { getCartId } from "../functions/CartFunctions";
 
 interface Review {
   reviewId: number;
   rating: number;
-  Comment: string;
+  comment: string;
+  productId: number;
+  customerId: number;
 }
 
 export interface ProductType {
@@ -17,21 +20,18 @@ export interface ProductType {
   description: string;
   price: number;
   image: string;
-}
-
-// Add this interface near your other interfaces
-interface ReviewFormData {
-  rating: number;
-  comment: string;
+  stockQuantity: number;
+  vendorId: number;
+  categoryId: number;
+  specificCategoryId: number;
+  reviews: Review[];
 }
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const [product, setProduct] = useState<ProductType | null>(null);
-  const [productReviews, setProductReviews] = useState<Review[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -48,53 +48,33 @@ export default function ProductDetail() {
         );
         if (!response.ok) {
           throw new Error("Failed to fetch product");
+        } else {
+          console.log("hello end of product");
         }
         const data = await response.json();
         await new Promise((resolve) => setTimeout(resolve, 1500));
+        console.log(data);
         setProduct(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const getProductReviews = async () => {
-      try {
-        setIsLoading(true);
-        const response = await fetch(
-          `http://localhost:9090/api/reviews/product/${id}`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Accept: "application/json",
-            },
-          }
+        setError(
+          err instanceof Error
+            ? err.message + "fromProduct"
+            : "An error occurred"
         );
-        if (!response.ok) {
-          throw new Error("Failed to fetch product Reviews");
-        }
-        const data = await response.json();
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        setProductReviews(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setIsLoading(false);
       }
     };
-    getProductReviews();
 
     getProduct();
   }, [id]);
 
   if (isLoading) return <Loading />;
-  if (error) return <div>Error: {error}</div>;
+  if (error) return <div>error: {error}</div>;
   if (!product) return <div>Product not found</div>;
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col ">
       <main className="flex-1 py-8">
         <div className="container px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -104,23 +84,17 @@ export default function ProductDetail() {
                 image: product.image,
                 name: product.name,
               }}
-            ></ProductImage>
+            />
 
             {/* Middle Section - Product Info */}
 
-            <ProductInfo
-              product={{
-                name: product.name,
-                price: product.price,
-                description: product.description,
-                productId: Number(id),
-              }}
-              reviews={productReviews}
-            />
+            <ProductInfo product={product} reviewsProp={product.reviews} />
 
             {/* Right Section - Purchase Options */}
             <PurchaseOptions
               product={{
+                productId: product.productId,
+                stockQuantity: product.stockQuantity,
                 price: product.price,
               }}
             />
@@ -133,14 +107,55 @@ export default function ProductDetail() {
 
 interface PurchaseOptionsProp {
   product: {
-    stockQuantity?: string;
+    productId: number;
+    stockQuantity: number;
     price: number;
   };
 }
 
 function PurchaseOptions({ product }: PurchaseOptionsProp) {
   const [quantity, setQuantity] = useState(1);
-  let inStock = true;
+  const [idCart, setIdCart] = useState<number | string>(0 || "");
+  const array = Array.from({ length: product.stockQuantity }, (_, i) => i + 1);
+  let inStock = product.stockQuantity != 0 ? true : false;
+
+  useEffect(() => {
+    const getId = async () => {
+      setIdCart(await getCartId());
+    };
+    getId();
+  }, []);
+
+  const handleAddToCart = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:9090/api/shoppingcartitems/create",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            shoppingCartId: idCart,
+            productId: product.productId,
+            quantity: quantity,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to add item to cart");
+      }
+
+      // Show success message or notification here
+      alert("Item added to cart successfully!");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart");
+    }
+  };
+
   return (
     <Card className="p-6">
       <div className="text-xl font-bold mb-4">{product.price}$</div>
@@ -158,7 +173,7 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="pl-3 pr-8 py-2 border rounded-md appearance-none bg-background w-24"
             >
-              {[1, 2, 3, 4, 5].map((num) => (
+              {[...array].map((num) => (
                 <option key={num} value={num}>
                   {num}
                 </option>
@@ -170,7 +185,11 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
       </div>
 
       <div className="space-y-3">
-        <Button className="w-full bg-emerald-600 hover:bg-emerald-700">
+        <Button
+          className="w-full bg-emerald-600 hover:bg-emerald-700"
+          onClick={handleAddToCart}
+          disabled={!inStock}
+        >
           Add to cart
         </Button>
         <Button className="w-full bg-amber-500 hover:bg-amber-600">
@@ -182,18 +201,98 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
 }
 
 interface ProductInfoProps {
-  product: {
-    name: string;
-    price: number;
-    description: string;
-    productId: number;
-  };
+  product: ProductType;
+  reviewsProp: Review[];
+}
+
+// Add this new interface
+interface AllReviewsPopupProps {
+  onClose: () => void;
   reviews: Review[];
 }
 
-function ProductInfo({ product, reviews }: ProductInfoProps) {
+// Add this new component for all reviews popup
+function AllReviewsPopup({ onClose, reviews }: AllReviewsPopupProps) {
+  // Add rating statistics calculation
+  const ratingStats = {
+    5: reviews.filter((r) => r.rating === 5).length,
+    4: reviews.filter((r) => r.rating === 4).length,
+    3: reviews.filter((r) => r.rating === 3).length,
+    2: reviews.filter((r) => r.rating === 2).length,
+    1: reviews.filter((r) => r.rating === 1).length,
+  };
+
+  // Calculate max value for bar scaling
+  const maxCount = Math.max(...Object.values(ratingStats));
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-[600px] max-w-[90%] max-h-[80vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">All Reviews ({reviews.length})</h2>
+          <Button variant="outline" onClick={onClose}>
+            ×
+          </Button>
+        </div>
+
+        {/* Add Rating Statistics */}
+        <div className="mb-6 space-y-2">
+          {[5, 4, 3, 2, 1].map((rating) => (
+            <div key={rating} className="flex items-center gap-2">
+              <div className="flex items-center gap-1 w-20">
+                <span className="text-sm">{rating}</span>
+                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              </div>
+              <div className="flex-1 h-4 bg-gray-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-yellow-400 rounded-full"
+                  style={{
+                    width: `${(ratingStats[rating] / maxCount) * 100}%`,
+                    transition: "width 0.3s ease-in-out",
+                  }}
+                />
+              </div>
+              <span className="text-sm w-12 text-right">
+                {ratingStats[rating]}
+              </span>
+            </div>
+          ))}
+        </div>
+
+        <div className="space-y-4">
+          {reviews.map((review) => (
+            <ReviewList key={review.reviewId} review={review} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Modify the ProductInfo component
+function ProductInfo({ product, reviewsProp }: ProductInfoProps) {
   const [popUp, setPopUp] = useState(false);
-  console.log(product.productId);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(reviewsProp);
+
+  // Function to get the best review
+  const getBestReview = () => {
+    if (reviews.length === 0) return null;
+    // Filter reviews with highest rating
+    const maxRating = Math.max(...reviews.map((review) => review.rating));
+    const bestReviews = reviews.filter((review) => review.rating === maxRating);
+    // Return a random review from the best ones
+    return bestReviews[Math.floor(Math.random() * bestReviews.length)];
+  };
+
+  function calculateAvrgReview() {
+    let sum = 0;
+    for (let i = 0; i < reviews.length; i++) {
+      sum += reviews[i].rating;
+    }
+    return sum / reviews.length;
+  }
+  const bestReview = getBestReview();
 
   return (
     <Card className="p-6">
@@ -217,7 +316,7 @@ function ProductInfo({ product, reviews }: ProductInfoProps) {
               <Star
                 key={i}
                 className={`h-5 w-5 ${
-                  i < (reviews[0]?.rating || 0) // Use first review rating or 0
+                  i < (calculateAvrgReview() || 0) // Use first review rating or 0
                     ? "fill-primary text-primary"
                     : "fill-muted text-muted"
                 }`}
@@ -246,38 +345,93 @@ function ProductInfo({ product, reviews }: ProductInfoProps) {
       <div className="border-t pt-4">
         <div className="flex items-center justify-between mb-2">
           <h2 className="font-semibold">Reviews ({reviews.length})</h2>
-          <button className="text-sm text-primary hover:underline">
-            See all
+          <button
+            onClick={() => setShowAllReviews(true)}
+            className="text-sm text-primary hover:underline"
+          >
+            See all reviews
           </button>
         </div>
 
-        {reviews.map((review) => (
-          <div key={review.reviewId} className="border rounded-md p-3 mb-2">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="bg-muted rounded-full p-1">
-                <User className="h-4 w-4" />
-              </div>
-              {/* <span className="font-medium">{review.username}</span> */}
-            </div>
-            <p className="text-sm mb-1">{review.Comment}</p>
-            <div className="flex">
-              {Array(5)
-                .fill(null)
-                .map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-4 w-4 ${
-                      i < review.rating
-                        ? "fill-primary text-primary"
-                        : "fill-muted text-muted"
-                    }`}
-                  />
-                ))}
-            </div>
-          </div>
-        ))}
+        {bestReview && <ReviewList review={bestReview} />}
       </div>
+
+      {popUp && (
+        <ReviewPopup
+          onClose={() => setPopUp(false)}
+          productId={product.productId}
+        />
+      )}
+
+      {showAllReviews && (
+        <AllReviewsPopup
+          onClose={() => setShowAllReviews(false)}
+          reviews={reviews}
+        />
+      )}
     </Card>
+  );
+}
+
+interface User {
+  id: number;
+  username: string;
+  email: string;
+}
+
+function ReviewList({ review }: { review: Review }) {
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:9090/api/customers/${review.customerId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch user");
+        }
+        const userData = await response.json();
+        setUser(userData);
+      } catch (error) {
+        console.error("Error fetching user:", error);
+      }
+    };
+
+    fetchUser();
+  }, [review.customerId]);
+
+  return (
+    <div key={review.reviewId} className="border rounded-md p-3 mb-2">
+      <div className="flex items-center gap-2 mb-1">
+        <div className="bg-muted rounded-full p-1">
+          <User className="h-4 w-4" />
+        </div>
+        <span className="font-medium">{user?.username || "Anonymous"}</span>
+      </div>
+      <p className="text-sm mb-1">{review.comment}</p>
+      <div className="flex">
+        {Array(5)
+          .fill(null)
+          .map((_, i) => (
+            <Star
+              key={i}
+              className={`h-4 w-4 ${
+                i < review.rating
+                  ? "fill-primary text-primary"
+                  : "fill-muted text-muted"
+              }`}
+            />
+          ))}
+      </div>
+    </div>
   );
 }
 
@@ -301,37 +455,30 @@ function ProductImage({ product }: ProductImageProp) {
   );
 }
 
-function ReviewPopup({
-  onClose,
-  productId,
-}: {
+interface ReviewPopupProp {
   onClose: () => void;
   productId?: number;
-}) {
+}
+
+function ReviewPopup({ onClose, productId }: ReviewPopupProp) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-
+  const customerId = Number(localStorage.getItem("id"));
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
       const response = await fetch("http://localhost:9090/api/reviews/create", {
-        
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          product: {
-            productId,
-          },
+          productId,
           rating,
           comment,
-          customer: {
-            customerId: Number(localStorage.getItem("id")), // Assuming you store user ID in localStorage
-          },
+          customerId,
         }),
       });
 

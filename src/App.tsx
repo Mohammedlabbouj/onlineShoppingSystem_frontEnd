@@ -34,20 +34,6 @@ interface Product {
   reviews: string[];
 }
 
-const sampleProduct = {
-  id: 1,
-  name: "Xbox Elite Wireless Controller Series 2",
-  price: 70,
-  image: "https://example.com/controller.jpg",
-  description:
-    "This elite-level controller with adjustable tension thumbsticks, a rechargeable battery, and swappable components for a personalized gaming experience.",
-  stock: 5,
-  rating: 4.5,
-  reviews: [
-    "Absolutely love it!",
-    "I thought it was a bit costly but it's well worth it.",
-  ],
-};
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(
     localStorage.getItem("isAuthenticated") === "true"

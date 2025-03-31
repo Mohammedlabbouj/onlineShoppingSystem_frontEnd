@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
 import { getCartId } from "@/functions/CartFunctions";
+// import { console } from "inspector";
+
 interface CartItem {
   id: number;
   name: string;
@@ -11,45 +13,129 @@ interface CartItem {
   image: string;
 }
 
+interface CartItemDTO {
+  cartItemId: number;
+  productId: number;
+  quantity: number;
+  shoppingCartId: number;
+}
+
+interface CartDTO {
+  shoppingCartDTOId: number;
+  customerId: number;
+  cartItems: CartItemDTO[];
+}
+
 export default function CartPage() {
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: 1,
-      name: "Xbox Elite Wireless Controller Series 2",
-      price: 70,
-      quantity: 3,
-      image:
-        "https://cdn.cs.1worldsync.com/syndication/mediaserverredirect/461cf7a8c7b27c64fc3f8fed176f62a9/width(1200).png",
-    },
-    {
-      id: 2,
-      name: "Nike Sportswear Club Fleece Hoodie",
-      price: 55,
-      quantity: 1,
-      image:
-        "https://cdn.shoplightspeed.com/shops/608356/files/21440878/nike-nike-sportswear-club-fleece-pullover-hoodie-b.jpg",
-    },
-  ]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [idCart, setIdCart] = useState<number | string>(0 || "");
 
   useEffect(() => {
-    const hello = () => {
-      let id = getCartId();
+    const getId = async () => {
+      setIdCart(await getCartId());
     };
-    hello();
+    getId();
   }, []);
 
-  const updateQuantity = (id: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
+  const getAllProductsFromCart = async () => {
+    try {
+      const cartResponse = await fetch(
+        `http://localhost:9090/api/shopping-cart/${idCart}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
-    setCartItems((items) =>
-      items.map((item) =>
-        item.id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
+      if (!cartResponse.ok) {
+        throw new Error("Failed to fetch cart items");
+      }
+
+      const cartData: CartDTO = await cartResponse.json();
+
+      const cartItemsWithDetails = await Promise.all(
+        cartData.cartItems.map(async (item) => {
+          const productResponse = await fetch(
+            `http://localhost:9090/api/products/${item.productId}`
+          );
+
+          if (!productResponse.ok) {
+            throw new Error(`Failed to fetch product ${item.productId}`);
+          }
+
+          const product = await productResponse.json();
+
+          return {
+            id: item.cartItemId,
+            name: product.name,
+            price: product.price,
+            quantity: item.quantity,
+            image: product.image,
+          };
+        })
+      );
+
+      setCartItems(cartItemsWithDetails);
+    } catch (error) {
+      console.error("Error fetching cart items:", error);
+    }
   };
 
-  const deleteItem = (id: number) => {
-    setCartItems((items) => items.filter((item) => item.id !== id));
+  useEffect(() => {
+    if (idCart) {
+      getAllProductsFromCart();
+    }
+  }, [idCart]);
+
+  const updateQuantity = async (id: number, newQuantity: number) => {
+    if (newQuantity < 1) return;
+
+    try {
+      const response = await fetch(
+        `http://localhost:9090/api/shopping-cart-items/${id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ quantity: newQuantity }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update quantity");
+      }
+
+      setCartItems((items) =>
+        items.map((item) =>
+          item.id === id ? { ...item, quantity: newQuantity } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+    }
+  };
+
+  const deleteItem = async (id: number) => {
+    try {
+      const response = await fetch(
+        `http://localhost:9090/api/shopping-cart-items/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete item");
+      }
+
+      setCartItems((items) => items.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
   };
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);

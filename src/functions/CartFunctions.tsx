@@ -1,14 +1,13 @@
+import { useState } from "react";
+
 const userId = Number(localStorage.getItem("id"));
-import { User } from "@/pages/Loging";
 
 interface CartType {
   id: number;
-  customer: User;
-  items: [];
 }
-let UserCart : CartType;
-
 export const getCartId = async () => {
+  // const [UserCart, setUserCart] = useState<CartType | null>(null);
+  let UserCart : CartType; 
   try {
     const response = await fetch(
       `http://localhost:9090/api/shopping-cart/customer/${userId}`,
@@ -24,12 +23,12 @@ export const getCartId = async () => {
       throw new Error("somthing went worng!");
     }
     const data = await response.json();
-    UserCart = data;
+    UserCart  = await data;
     console.log(UserCart);
-} catch (error) {
+  } catch (error) {
     console.error("Error managing shopping cart:", error);
     throw error;
   } finally {
   }
-  return await UserCart.id;
+  return UserCart != null ? await UserCart.id : "faild to get cart by  id ";
 };

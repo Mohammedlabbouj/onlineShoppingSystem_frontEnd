@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ArrowRight, Star } from "lucide-react";
+import { ProductType } from "./Product";
 
 export interface Product {
   productId: number;
@@ -30,16 +31,16 @@ export interface ProductReview {
 }
 
 export interface ProductCardProps {
-  product: Product;
+  product: ProductType;
   onClick: () => void;
 }
 
 export interface ProductsSectionProps {
-  products: Product[];
+  products: ProductType[];
   onClick: () => void;
 }
 export default function Home() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<ProductType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -96,7 +97,7 @@ export default function Home() {
       </div>
     );
   }
-  const handleAddToCart = async () => {};
+  const handleAddToCart = async () => { };
 
   return (
     <>
@@ -112,43 +113,18 @@ export default function Home() {
 }
 
 export function ProductCard({ product, onClick }: ProductCardProps) {
-  const [productReview, setProductReview] = useState<ProductReview | null>(
-    null
-  );
-  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const getProductReview = async () => {
-      try {
-        const response = await fetch(
-          `http://localhost:9090/api/reviews/product/${product.productId}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch product's review");
-        }
-
-        const data = await response.json();
-        setProductReview(data);
-      } catch (error) {
-        console.error("Error fetching review:", error);
-        setProductReview(null);
-      } finally {
-        setIsLoading(false);
+    function calculateAvrgReview() {
+      let sum = 0;
+      for (let i = 0; i < product.reviews.length; i++) {
+        sum += product.reviews[i].rating;
       }
-    };
-
-    getProductReview();
-  }, [product.productId]);
-
-  const renderReviews = () => {
-    if (isLoading) {
-      return (
-        <div className="text-sm text-muted-foreground">Loading reviews...</div>
-      );
+      return sum / product.reviews.length;
     }
 
-    if (!productReview) {
+  const renderReviews = () => {
+
+    if (product.reviews.length === 0) {
       return (
         <div className="flex items-center gap-2">
           <div className="flex">
@@ -170,8 +146,8 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
               .map((_, i) => (
                 <Star
                   key={i}
-                  className={`h-4 w-4 ${
-                    i < (productReview?.rating || 0)
+                  className={`h-5 w-5 ${
+                    i < (calculateAvrgReview() || 0) // Use first review rating or 0
                       ? "fill-primary text-primary"
                       : "fill-muted text-muted"
                   }`}
@@ -179,7 +155,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
               ))}
           </div>
           <span className="text-sm text-muted-foreground">
-            ({productReview.comment || "No one reviewed yet"})
+            ({product.reviews.length || "No one reviewed yet"})
           </span>
         </div>
       );
