@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ArrowRight, Star } from "lucide-react";
 import { ProductType } from "./Product";
-
+import { getCartId, handleAddToCart } from "@/functions/CartFunctions";
 export interface Product {
   productId: number;
   name: string;
@@ -32,12 +32,11 @@ export interface ProductReview {
 
 export interface ProductCardProps {
   product: ProductType;
-  onClick: () => void;
+  cartId?: number | null;
 }
 
 export interface ProductsSectionProps {
   products: ProductType[];
-  onClick: () => void;
 }
 export default function Home() {
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -97,14 +96,13 @@ export default function Home() {
       </div>
     );
   }
-  const handleAddToCart = async () => { };
 
   return (
     <>
       <div className="flex min-h-screen flex-col">
         <main className="flex-1">
           <ForYou />
-          <ProductsSection products={products} onClick={handleAddToCart} />
+          <ProductsSection products={products} />
           <Footer />
         </main>
       </div>
@@ -112,18 +110,18 @@ export default function Home() {
   );
 }
 
-export function ProductCard({ product, onClick }: ProductCardProps) {
+export function ProductCard({ product, cartId }: ProductCardProps) {
+  // Replace the loose id variable with state
 
-    function calculateAvrgReview() {
-      let sum = 0;
-      for (let i = 0; i < product.reviews.length; i++) {
-        sum += product.reviews[i].rating;
-      }
-      return sum / product.reviews.length;
+  function calculateAvrgReview() {
+    let sum = 0;
+    for (let i = 0; i < product.reviews.length; i++) {
+      sum += product.reviews[i].rating;
     }
+    return sum / product.reviews.length;
+  }
 
   const renderReviews = () => {
-
     if (product.reviews.length === 0) {
       return (
         <div className="flex items-center gap-2">
@@ -189,19 +187,47 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         <BuyProduct
           className="bg-yellow-400"
           value="Buy Now"
-          onClick={onClick}
+          onClick={() => {
+            //later
+          }}
         />
         <AddToCart
           className="bg-green-500"
           value="Add to Cart"
-          onClick={onClick}
+          onClick={() => {
+            if (cartId) {
+              // Add check to ensure cartId exists
+              handleAddToCart({
+                shoppingCartId: cartId,
+                productId: product.productId,
+                quantity: 1,
+              });
+            } else {
+              console.error("Cart ID not yet available");
+            }
+          }}
         />
       </CardFooter>
     </Card>
   );
 }
 
-function ProductsSection({ products, onClick }: ProductsSectionProps) {
+function ProductsSection({  products }: ProductsSectionProps) {
+    const [cartId, setCartId] = useState<number | null>(null);
+
+    useEffect(() => {
+      const getId = async () => {
+        try {
+          const fetchedId = await getCartId();
+          setCartId(fetchedId);
+          console.log("Cart ID:", fetchedId);
+        } catch (error) {
+          console.error("Error fetching cart ID:", error);
+        }
+      };
+
+      getId();
+    }, []);
   return (
     <>
       {/* Featured Products Section */}
@@ -222,7 +248,7 @@ function ProductsSection({ products, onClick }: ProductsSectionProps) {
               <ProductCard
                 key={product.productId}
                 product={product}
-                onClick={onClick}
+                cartId={cartId}
               />
             ))}
           </div>

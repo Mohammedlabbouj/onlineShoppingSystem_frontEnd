@@ -1,14 +1,15 @@
-import { useState } from "react";
-
-const userId = Number(localStorage.getItem("id"));
 
 interface CartType {
-  id: number;
+  shoppingCartDTOId : number;
 }
 export const getCartId = async () => {
-  // const [UserCart, setUserCart] = useState<CartType | null>(null);
-  let UserCart : CartType; 
+  const userId = Number(localStorage.getItem("id"));
+  let UserCart: CartType;
   try {
+    // Debug userId
+    console.log("UserId being used:", userId);
+
+    // Add timeout to fetch request
     const response = await fetch(
       `http://localhost:9090/api/shopping-cart/customer/${userId}`,
       {
@@ -17,18 +18,91 @@ export const getCartId = async () => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
+        // Increased timeout for testing
+        signal: AbortSignal.timeout(10000),
       }
     );
+
+    // Debug response
+    console.log("Response status:", response.status);
+    console.log("Response headers:", [...response.headers.entries()]);
+
     if (!response.ok) {
-      throw new Error("somthing went worng!");
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     const data = await response.json();
-    UserCart  = await data;
-    console.log(UserCart);
+    console.log("Received data:", data);
+
+    UserCart = data;
+    return UserCart?.shoppingCartDTOId;
   } catch (error) {
-    console.error("Error managing shopping cart:", error);
+    // More detailed error logging
+    console.error("Full error details:", {
+      error,
+      userId,
+      url: `http://localhost:9090/api/shopping-cart/customer/${userId}`,
+    });
     throw error;
-  } finally {
   }
-  return UserCart != null ? await UserCart.id : "faild to get cart by  id ";
+};
+
+interface handleAddToCartProp {
+  shoppingCartId: number;
+  productId: number;
+  quantity: number;
+}
+
+export const handleAddToCart = async (product: handleAddToCartProp) => {
+  try {
+    // Wait for cart ID
+    const cartId = await getCartId();
+    if (!cartId) {
+      throw new Error("Could not get cart ID");
+    }
+
+    const response = await fetch(
+      "http://localhost:9090/api/shoppingcartitems/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          ...product,
+          shoppingCartId: cartId,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to add item to cart: ${response.status}`);
+    }
+
+    alert("Item added to cart successfully!");
+  } catch (error) {
+    console.error("Error adding to cart:", error);
+    alert("Failed to add item to cart");
+  }
+};
+
+// Test function to verify API
+export const testCartAPI = async () => {
+  try {
+    const response = await fetch(
+      "http://localhost:9090/api/shopping-cart/customer",
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    console.log("API Test Response:", data);
+  } catch (error) {
+    console.error("API Test Error:", error);
+  }
 };

@@ -24,7 +24,6 @@ const ForYou = () => {
     let category: number;
     if (user.sex === "male" && user.age >= 18 && user.age <= 30) {
       category = 1;
-      console.log(category);
     } else if (user.sex === "male" && user.age > 30) {
       category = 2;
     } else if (user.sex === "female" && user.age >= 18 && user.age <= 30) {
@@ -43,7 +42,7 @@ const ForYou = () => {
               "Content-Type": "application/json",
               Accept: "application/json",
             },
-          }
+          },
         );
         if (!response.ok) {
           throw new Error("Failed to fetch product");
@@ -58,7 +57,7 @@ const ForYou = () => {
     };
     getProductsByspecificcategoryId();
   }, [user]);
-  const shuffleArray = (array : Product[]) => {
+  const shuffleArray = (array: Product[]) => {
     return array.sort(() => Math.random() - 0.5);
   };
   if (isLoading) return <Loading />;
@@ -68,17 +67,21 @@ const ForYou = () => {
       <h2 className="text-2xl font-bold mb-4">For You</h2>
       <div className="flex gap-4 overflow-x-auto">
         {products.map((product: Product) => (
-        <Link to={`/product/${product.productId}`} className="block">
-          <Card key={product.productId} className="min-w-[200px] p-2">
-            <CardContent>
-              <img
-                src={product.image}
-                alt={product.name}
-                className="w-full h-48 object-contain"
+          <Link
+            key={product.productId}
+            to={`/product/${product.productId}`}
+            className="block"
+          >
+            <Card key={product.productId} className="min-w-[200px] p-2">
+              <CardContent>
+                <img
+                  src={product.image}
+                  alt={product.name}
+                  className="w-full h-48 object-contain"
                 />
-            </CardContent>
-          </Card>
-        </Link>
+              </CardContent>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>

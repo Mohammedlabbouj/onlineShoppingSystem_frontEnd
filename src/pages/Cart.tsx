@@ -36,7 +36,7 @@ export default function CartPage() {
     };
     getId();
   }, []);
-
+  console.log(idCart)
   const getAllProductsFromCart = async () => {
     try {
       const cartResponse = await fetch(
@@ -122,7 +122,7 @@ export default function CartPage() {
   const deleteItem = async (id: number) => {
     try {
       const response = await fetch(
-        `http://localhost:9090/api/shopping-cart-items/${id}`,
+        `http://localhost:9090/api/shoppingcartitems/${id}`,
         {
           method: "DELETE",
         }

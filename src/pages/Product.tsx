@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useParams } from "react-router-dom";
 import Loading from "../components/Loading";
-import { getCartId } from "../functions/CartFunctions";
 
 interface Review {
   reviewId: number;
@@ -49,11 +48,11 @@ export default function ProductDetail() {
         if (!response.ok) {
           throw new Error("Failed to fetch product");
         } else {
-          console.log("hello end of product");
+          // console.log("hello end of product");
         }
         const data = await response.json();
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log(data);
+        // console.log(data);
         setProduct(data);
       } catch (err) {
         setError(
@@ -113,20 +112,60 @@ interface PurchaseOptionsProp {
   };
 }
 
+interface CartType {
+  shoppingCartDTOId: number;
+  customerId: number;
+  cartItems: {
+    productId: number;
+    cartItemId: number;
+    quantity: number;
+    shoppingCartId: number;
+  }[];
+}
+
 function PurchaseOptions({ product }: PurchaseOptionsProp) {
   const [quantity, setQuantity] = useState(1);
-  const [idCart, setIdCart] = useState<number | string>(0 || "");
+  const [cart, setCart] = useState<CartType>();
+  const [isLoading, setIsLoading] = useState(true);
+  const [inCart, setInCart] = useState(false);
   const array = Array.from({ length: product.stockQuantity }, (_, i) => i + 1);
   let inStock = product.stockQuantity != 0 ? true : false;
 
   useEffect(() => {
-    const getId = async () => {
-      setIdCart(await getCartId());
+    const getCart = async () => {
+      const userId = Number(localStorage.getItem("id"));
+      try {
+        setIsLoading(true);
+        const response = await fetch(
+          `http://localhost:9090/api/shopping-cart/customer/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch cart items");
+        }
+        const cartData: CartType = await response.json();
+        setCart(cartData);
+        // Update inCart state based on the fetched cart data
+        setInCart(
+          cartData.cartItems.some(
+            (item) => item.productId === product.productId
+          )
+        );
+      } catch (error) {
+        console.error("Error fetching cart ID:", error);
+      }
     };
-    getId();
-  }, []);
+    getCart();
+  }, [product.productId]);
 
   const handleAddToCart = async () => {
+    console.log("id of cart from handel add " + cart?.shoppingCartDTOId);
     try {
       const response = await fetch(
         "http://localhost:9090/api/shoppingcartitems/create",
@@ -137,7 +176,7 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
             Accept: "application/json",
           },
           body: JSON.stringify({
-            shoppingCartId: idCart,
+            shoppingCartId: cart?.shoppingCartDTOId,
             productId: product.productId,
             quantity: quantity,
           }),
@@ -147,6 +186,7 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
       if (!response.ok) {
         throw new Error("Failed to add item to cart");
       }
+      setInCart(!inCart); // Update inCart state after successful addition
 
       // Show success message or notification here
       alert("Item added to cart successfully!");
@@ -156,6 +196,45 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
     }
   };
 
+  const handleRemoveFromCart = async () => {
+    let itemToDelete: number | undefined;
+
+    // Find the cart item ID first
+    cart?.cartItems.forEach((item) => {
+      console.log(item.cartItemId);
+      if (item.productId === product.productId) {
+        itemToDelete = item.cartItemId;
+        console.log(itemToDelete)
+      }
+    });
+
+    if (!itemToDelete) {
+      console.error("Cart item not found");
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:9090/api/shoppingcartitems/${itemToDelete}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete item");
+      }
+
+      // Update local state after successful deletion
+      setInCart(false);
+      alert("Item removed from cart successfully!");
+
+      // Optionally refresh the cart data
+      // Add a function to refresh cart data here
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
+  };
   return (
     <Card className="p-6">
       <div className="text-xl font-bold mb-4">{product.price}$</div>
@@ -185,13 +264,25 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
       </div>
 
       <div className="space-y-3">
-        <Button
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
-          onClick={handleAddToCart}
-          disabled={!inStock}
-        >
-          Add to cart
-        </Button>
+        {!inCart ? (
+          <Button
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+            onClick={handleAddToCart}
+            disabled={!inStock}
+          >
+            Add to cart
+          </Button>
+        ) : (
+          <Button
+            className="w-full bg-red-500 hover:bg-red-600"
+            onClick={() => {
+              handleRemoveFromCart();
+            }}
+          >
+            Remove from cart
+          </Button>
+        )}
+
         <Button className="w-full bg-amber-500 hover:bg-amber-600">
           Buy now
         </Button>

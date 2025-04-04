@@ -1,7 +1,6 @@
-import { use, useEffect, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
-
 interface Props {
   setIsAuthenticated: (value: boolean) => void;
 }
@@ -22,7 +21,6 @@ export default function Login({ setIsAuthenticated }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -47,9 +45,9 @@ export default function Login({ setIsAuthenticated }: Props) {
       const users = await response.json();
       console.log(users);
       const user: User = users.find(
-        (user: User) => user.email === email && user.password === password
+        (user: User) => user.email === email && user.password === password,
       );
-      
+
       if (!user) {
         throw new Error("Invalid email or password");
       }
@@ -63,12 +61,11 @@ export default function Login({ setIsAuthenticated }: Props) {
       localStorage.setItem("id", String(user.customerId));
       localStorage.setItem("gander", user.sex);
       localStorage.setItem("age", String(user.age));
-
       navigate("/");
     } catch (err) {
       console.error("Login error:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to connect to server"
+        err instanceof Error ? err.message : "Failed to connect to server",
       );
     } finally {
       setIsLoading(false);
@@ -81,7 +78,7 @@ export default function Login({ setIsAuthenticated }: Props) {
         QUICK <span className="text-green-500">CART</span>
       </h1>
       <div className="w-full max-w-md bg-white rounded-lg p-6 shadow-lg mt-6 border border-gray-300">
-        <h2 className="text-2xl font-bold text-black mb-4 text-center">
+        <h2 className="text-2xl font-bold text-black mb-4 text-center ">
           Login
         </h2>
         <form className="flex flex-col" onSubmit={handleLogin}>
