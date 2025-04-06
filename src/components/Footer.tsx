@@ -1,8 +1,8 @@
-import React from 'react'
+import React from "react";
 
 export default function Footer() {
-   return (
-    <footer className="border-t bg-muted/40">
+  return (
+    <footer className="border-t text-white bg-black">
       <div className="container px-4 py-8 sm:px-6">
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div>

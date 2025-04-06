@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Minus, Plus } from "lucide-react";
 import { getCartId } from "@/functions/CartFunctions";
-// import { console } from "inspector";
+import { Link } from "react-router-dom";
 
 interface CartItem {
   id: number;
@@ -36,7 +36,7 @@ export default function CartPage() {
     };
     getId();
   }, []);
-  console.log(idCart)
+  console.log(idCart);
   const getAllProductsFromCart = async () => {
     try {
       const cartResponse = await fetch(
@@ -47,7 +47,7 @@ export default function CartPage() {
             "Content-Type": "application/json",
             Accept: "application/json",
           },
-        }
+        },
       );
 
       if (!cartResponse.ok) {
@@ -59,7 +59,7 @@ export default function CartPage() {
       const cartItemsWithDetails = await Promise.all(
         cartData.cartItems.map(async (item) => {
           const productResponse = await fetch(
-            `http://localhost:9090/api/products/${item.productId}`
+            `http://localhost:9090/api/products/${item.productId}`,
           );
 
           if (!productResponse.ok) {
@@ -75,7 +75,7 @@ export default function CartPage() {
             quantity: item.quantity,
             image: product.image,
           };
-        })
+        }),
       );
 
       setCartItems(cartItemsWithDetails);
@@ -95,14 +95,14 @@ export default function CartPage() {
 
     try {
       const response = await fetch(
-        `http://localhost:9090/api/shopping-cart-items/${id}`,
+        `http://localhost:9090/api/shoppingcartitems/${id}`,
         {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ quantity: newQuantity }),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -111,8 +111,8 @@ export default function CartPage() {
 
       setCartItems((items) =>
         items.map((item) =>
-          item.id === id ? { ...item, quantity: newQuantity } : item
-        )
+          item.id === id ? { ...item, quantity: newQuantity } : item,
+        ),
       );
     } catch (error) {
       console.error("Error updating quantity:", error);
@@ -125,7 +125,7 @@ export default function CartPage() {
         `http://localhost:9090/api/shoppingcartitems/${id}`,
         {
           method: "DELETE",
-        }
+        },
       );
 
       if (!response.ok) {
@@ -141,7 +141,7 @@ export default function CartPage() {
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
-    0
+    0,
   );
 
   return (
@@ -217,7 +217,7 @@ export default function CartPage() {
 
                   <div className="mt-6 flex justify-end">
                     <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-                      Add an other item
+                      <Link to={"/"}>Add an other item</Link>
                     </Button>
                   </div>
                 </div>
@@ -236,7 +236,7 @@ export default function CartPage() {
                 </div>
 
                 <Button className="w-full bg-amber-400 hover:bg-amber-500 text-black font-medium">
-                  Proceed to checkout
+                  <Link to={`/checkout/${idCart}`}>Proceed to checkout</Link>
                 </Button>
               </Card>
             </div>

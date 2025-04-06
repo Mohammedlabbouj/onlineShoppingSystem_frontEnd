@@ -134,6 +134,7 @@ function PurchaseOptions({ product }: PurchaseOptionsProp) {
   useEffect(() => {
     const getCart = async () => {
       const userId = Number(localStorage.getItem("id"));
+      console.log(userId);
       try {
         setIsLoading(true);
         const response = await fetch(

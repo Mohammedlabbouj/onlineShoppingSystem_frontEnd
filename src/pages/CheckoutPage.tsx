@@ -1,39 +1,163 @@
+import type React from "react";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { CreditCard, Check } from "lucide-react";
+import OrderReviewPopup from "@/components/OrderReviewPopup";
+interface CartItem {
+  id: number;
+  name: string;
+  price: number;
+  quantity: number;
+  image: string;
+}
 
-import type React from "react"
+interface CartItemDTO {
+  cartItemId: number;
+  productId: number;
+  quantity: number;
+  shoppingCartId: number;
+}
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CreditCard, Check } from "lucide-react"
+interface CartDTO {
+  shoppingCartDTOId: number;
+  customerId: number;
+  cartItems: CartItemDTO[];
+}
 
 interface Address {
-  country: string
-  fullName: string
-  phoneNumber: string
-  streetAddress: string
-  city: string
-  region: string
-  postalCode: string
+  country: string;
+  fullName: string;
+  phoneNumber: string;
+  streetAddress: string;
+  city: string;
+  region: string;
+  postalCode: string;
 }
 
 interface PaymentMethod {
-  cardNumber: string
-  nameOnCard: string
-  expirationMonth: string
-  expirationYear: string
-  securityCode: string
+  cardNumber: string;
+  nameOnCard: string;
+  expirationMonth: string;
+  expirationYear: string;
+  securityCode: string;
 }
 
 export default function CheckoutPage() {
-  const [address, setAddress] = useState<Address | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(null)
+  const { idCart } = useParams<{ idCart: string }>();
+  const [address, setAddress] = useState<Address | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
+    null,
+  );
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+  const [placedOrder, setPlacedOrder] = useState(false);
+  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
+  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
 
-  const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false)
-  const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false)
+  useEffect(() => {
+    const getAllProductsFromCart = async () => {
+      try {
+        const cartResponse = await fetch(
+          `http://localhost:9090/api/shopping-cart/${idCart}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          },
+        );
+
+        if (!cartResponse.ok) {
+          throw new Error("Failed to fetch cart items");
+        }
+
+        const cartData: CartDTO = await cartResponse.json();
+
+        const cartItemsWithDetails = await Promise.all(
+          cartData.cartItems.map(async (item) => {
+            const productResponse = await fetch(
+              `http://localhost:9090/api/products/${item.productId}`,
+            );
+
+            if (!productResponse.ok) {
+              throw new Error(`Failed to fetch product ${item.productId}`);
+            }
+
+            const product = await productResponse.json();
+
+            return {
+              id: item.cartItemId,
+              name: product.name,
+              price: product.price,
+              quantity: item.quantity,
+              image: product.image,
+            };
+          }),
+        );
+
+        setCartItems(cartItemsWithDetails);
+      } catch (error) {
+        console.error("Error fetching cart items:", error);
+      }
+    };
+    getAllProductsFromCart();
+  }, []);
+
+  const creatShippingAddress = async (addressData: Address) => {
+    // Use addressData directly instead of the 'address' state variable
+    console.log("Creating shipping address with data:", addressData);
+    const response = await fetch(
+      "http://localhost:9090/api/shipping-addresses/create",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          street: addressData.streetAddress, // Use parameter
+          city: addressData.city, // Use parameter
+          state: addressData.region, // Use parameter
+          country: addressData.country, // Use parameter
+          postalCode: addressData.postalCode, // Use parameter
+          fullName: addressData.fullName, // Use parameter
+          phoneNumber: addressData.phoneNumber, // Use parameter
+          customerId : localStorage.getItem("id"),
+        }),
+      },
+    );
+
+    // It's good practice to check the response and potentially throw an error
+    if (!response.ok) {
+      const errorData = await response.text(); // Or response.json() if API returns JSON error
+      console.error("Error creating shipping address:", errorData);
+      throw new Error("Failed to create shipping address"); // Throw error to be caught
+    } else {
+      console.log("Shipping address created successfully");
+      // Optionally return data if needed
+      // const result = await response.json();
+      // return result;
+    }
+  };
 
   const [addressForm, setAddressForm] = useState<Address>({
     country: "",
@@ -43,7 +167,7 @@ export default function CheckoutPage() {
     city: "",
     region: "",
     postalCode: "",
-  })
+  });
 
   const [paymentForm, setPaymentForm] = useState<PaymentMethod>({
     cardNumber: "",
@@ -51,28 +175,49 @@ export default function CheckoutPage() {
     expirationMonth: "",
     expirationYear: "",
     securityCode: "",
-  })
+  });
 
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setAddressForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setAddressForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handlePaymentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setPaymentForm((prev) => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setPaymentForm((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleAddressSubmit = () => {
-    setAddress(addressForm)
-    setIsAddressDialogOpen(false)
-  }
+  // Make the handler async
+  const handleAddressSubmit = async () => {
+    setAddress(addressForm); // Update the UI state (this is still async visually)
+
+    try {
+      // Pass the current form data directly to the API function
+      await creatShippingAddress(addressForm);
+      setIsAddressDialogOpen(false); // Close dialog only on success
+    } catch (error) {
+      // Handle the error, e.g., show a message to the user
+      console.error("Submission failed:", error);
+      // Maybe set an error state here to display in the dialog
+    }
+  };
 
   const handlePaymentSubmit = () => {
-    setPaymentMethod(paymentForm)
-    setIsPaymentDialogOpen(false)
-  }
-
+    setPaymentMethod(paymentForm);
+    setIsPaymentDialogOpen(false);
+  };
+  const navigate = useNavigate();
+  const handleClosePopup = () => {
+    setIsPopupVisible(false);
+    setPlacedOrder(true);
+    setTimeout(() => {
+      navigate("/");
+    }, 2000);
+  };
+  const TotalPrice = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
   return (
     <div className="flex min-h-screen flex-col">
       <main className="flex-1 py-8">
@@ -91,13 +236,21 @@ export default function CheckoutPage() {
                       <Check className="h-5 w-5 text-green-500 mr-2" />
                       <span className="font-medium">{address.fullName}</span>
                     </div>
-                    <p className="text-muted-foreground">{address.streetAddress}</p>
+                    <p className="text-muted-foreground">
+                      {address.streetAddress}
+                    </p>
                     <p className="text-muted-foreground">
                       {address.city}, {address.region} {address.postalCode}
                     </p>
                     <p className="text-muted-foreground">{address.country}</p>
-                    <p className="text-muted-foreground">{address.phoneNumber}</p>
-                    <Button variant="outline" className="mt-2" onClick={() => setIsAddressDialogOpen(true)}>
+                    <p className="text-muted-foreground">
+                      {address.phoneNumber}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => setIsAddressDialogOpen(true)}
+                    >
                       Change
                     </Button>
                   </div>
@@ -119,13 +272,22 @@ export default function CheckoutPage() {
                   <div className="space-y-2">
                     <div className="flex items-center">
                       <CreditCard className="h-5 w-5 text-blue-500 mr-2" />
-                      <span className="font-medium">•••• •••• •••• {paymentMethod.cardNumber.slice(-4)}</span>
+                      <span className="font-medium">
+                        •••• •••• •••• {paymentMethod.cardNumber.slice(-4)}
+                      </span>
                     </div>
-                    <p className="text-muted-foreground">{paymentMethod.nameOnCard}</p>
                     <p className="text-muted-foreground">
-                      Expires: {paymentMethod.expirationMonth}/{paymentMethod.expirationYear}
+                      {paymentMethod.nameOnCard}
                     </p>
-                    <Button variant="outline" className="mt-2" onClick={() => setIsPaymentDialogOpen(true)}>
+                    <p className="text-muted-foreground">
+                      Expires: {paymentMethod.expirationMonth}/
+                      {paymentMethod.expirationYear}
+                    </p>
+                    <Button
+                      variant="outline"
+                      className="mt-2"
+                      onClick={() => setIsPaymentDialogOpen(true)}
+                    >
                       Change
                     </Button>
                   </div>
@@ -140,13 +302,6 @@ export default function CheckoutPage() {
                   )
                 )}
               </Card>
-
-              {/* Place Order Button */}
-              {address && paymentMethod && (
-                <Button className="w-full bg-amber-400 hover:bg-amber-500 text-black font-medium py-6 text-lg">
-                  Place your order
-                </Button>
-              )}
             </div>
 
             {/* Order Summary */}
@@ -164,22 +319,62 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Items:</span>
-                    <span>—</span>
+                    <span>{cartItems.length}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping handling:</span>
-                    <span>—</span>
+                    <span>10$</span>
                   </div>
                   <div className="border-t pt-4 flex justify-between font-medium">
                     <span>Order Total:</span>
-                    <span>99$</span>
+                    <span>{TotalPrice}$</span>
                   </div>
                 </div>
+                <Button
+                  className="w-full mt-2 bg-amber-400 hover:bg-amber-500 text-black mb-6"
+                  onClick={() => setIsPopupVisible(true)}
+                >
+                  Review items and shipping
+                </Button>
               </Card>
             </div>
           </div>
         </div>
       </main>
+      {isPopupVisible && (
+        <div
+          onClick={() => {
+            setIsPopupVisible(false);
+          }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+        >
+          <OrderReviewPopup
+            items={cartItems}
+            shippingCost={10}
+            idCart={idCart}
+            setIsPopupVisible={handleClosePopup}
+          />
+        </div>
+      )}
+
+      {placedOrder && (
+        <div
+          onClick={() => {
+            setPlacedOrder(false);
+          }}
+          className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4"
+        >
+          <div className="bg-white p-6 rounded-lg shadow-lg text-center">
+            {/* A Popup with message if user made Order */}
+            <h2 className="text-xl font-bold text-green-600 mb-2">
+              Order Placed!
+            </h2>
+            <p className="text-gray-700">
+              Your order has been placed successfully.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Address Dialog */}
       <Dialog open={isAddressDialogOpen} onOpenChange={setIsAddressDialogOpen}>
@@ -190,11 +385,21 @@ export default function CheckoutPage() {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="country">Country/Region</Label>
-              <Input id="country" name="country" value={addressForm.country} onChange={handleAddressChange} />
+              <Input
+                id="country"
+                name="country"
+                value={addressForm.country}
+                onChange={handleAddressChange}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="fullName">Full Name</Label>
-              <Input id="fullName" name="fullName" value={addressForm.fullName} onChange={handleAddressChange} />
+              <Input
+                id="fullName"
+                name="fullName"
+                value={addressForm.fullName}
+                onChange={handleAddressChange}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="phoneNumber">Phone Number</Label>
@@ -217,20 +422,38 @@ export default function CheckoutPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="city">City</Label>
-                <Input id="city" name="city" value={addressForm.city} onChange={handleAddressChange} />
+                <Input
+                  id="city"
+                  name="city"
+                  value={addressForm.city}
+                  onChange={handleAddressChange}
+                />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="region">Region/District</Label>
-                <Input id="region" name="region" value={addressForm.region} onChange={handleAddressChange} />
+                <Input
+                  id="region"
+                  name="region"
+                  value={addressForm.region}
+                  onChange={handleAddressChange}
+                />
               </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="postalCode">Postal Code</Label>
-              <Input id="postalCode" name="postalCode" value={addressForm.postalCode} onChange={handleAddressChange} />
+              <Input
+                id="postalCode"
+                name="postalCode"
+                value={addressForm.postalCode}
+                onChange={handleAddressChange}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button className="w-full bg-amber-400 hover:bg-amber-500 text-black" onClick={handleAddressSubmit}>
+            <Button
+              className="w-full bg-amber-400 hover:bg-amber-500 text-black"
+              onClick={handleAddressSubmit}
+            >
               Add this Address
             </Button>
           </DialogFooter>
@@ -256,44 +479,59 @@ export default function CheckoutPage() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="nameOnCard">Name on card</Label>
-              <Input id="nameOnCard" name="nameOnCard" value={paymentForm.nameOnCard} onChange={handlePaymentChange} />
+              <Input
+                id="nameOnCard"
+                name="nameOnCard"
+                value={paymentForm.nameOnCard}
+                onChange={handlePaymentChange}
+              />
             </div>
             <div className="grid gap-2">
               <Label>Expiration Date</Label>
               <div className="flex gap-4">
                 <Select
                   value={paymentForm.expirationMonth}
-                  onValueChange={(value) => setPaymentForm((prev) => ({ ...prev, expirationMonth: value }))}
+                  onValueChange={(value) =>
+                    setPaymentForm((prev) => ({
+                      ...prev,
+                      expirationMonth: value,
+                    }))
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="MM" />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 12 }, (_, i) => {
-                      const month = (i + 1).toString().padStart(2, "0")
+                      const month = (i + 1).toString().padStart(2, "0");
                       return (
                         <SelectItem key={month} value={month}>
                           {month}
                         </SelectItem>
-                      )
+                      );
                     })}
                   </SelectContent>
                 </Select>
                 <Select
                   value={paymentForm.expirationYear}
-                  onValueChange={(value) => setPaymentForm((prev) => ({ ...prev, expirationYear: value }))}
+                  onValueChange={(value) =>
+                    setPaymentForm((prev) => ({
+                      ...prev,
+                      expirationYear: value,
+                    }))
+                  }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="YYYY" />
                   </SelectTrigger>
                   <SelectContent>
                     {Array.from({ length: 10 }, (_, i) => {
-                      const year = (new Date().getFullYear() + i).toString()
+                      const year = (new Date().getFullYear() + i).toString();
                       return (
                         <SelectItem key={year} value={year}>
                           {year}
                         </SelectItem>
-                      )
+                      );
                     })}
                   </SelectContent>
                 </Select>
@@ -310,7 +548,9 @@ export default function CheckoutPage() {
               />
             </div>
             <div className="mt-2">
-              <p className="text-sm text-muted-foreground">QuickCart accept all majors Debit/Credit Cards</p>
+              <p className="text-sm text-muted-foreground">
+                QuickCart accept all majors Debit/Credit Cards
+              </p>
               <div className="flex gap-2 mt-2">
                 <div className="w-10 h-6 bg-blue-500 rounded"></div>
                 <div className="w-10 h-6 bg-gray-700 rounded"></div>
@@ -320,17 +560,22 @@ export default function CheckoutPage() {
             </div>
           </div>
           <DialogFooter className="flex flex-col sm:flex-row gap-2">
-            <Button variant="outline" className="sm:flex-1" onClick={() => setIsPaymentDialogOpen(false)}>
+            <Button
+              variant="outline"
+              className="sm:flex-1"
+              onClick={() => setIsPaymentDialogOpen(false)}
+            >
               Cancel
             </Button>
-            <Button className="sm:flex-1 bg-amber-400 hover:bg-amber-500 text-black" onClick={handlePaymentSubmit}>
+            <Button
+              className="sm:flex-1 bg-amber-400 hover:bg-amber-500 text-black"
+              onClick={handlePaymentSubmit}
+            >
               Add this Card
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
-
-

@@ -14,6 +14,13 @@ export interface User {
   age: number;
 }
 
+export interface vender {
+  vendorId: number;
+  email: string;
+  password: string;
+  username: string;
+}
+
 export default function Login({ setIsAuthenticated }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,32 +43,61 @@ export default function Login({ setIsAuthenticated }: Props) {
         // credentials: "include", // Include cookies if needed
         // mode: "cors", // Explicitly set CORS mode
       });
+      const allVenders = await fetch("http://localhost:9090/api/vendors/all", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+      });
 
+      if (!allVenders.ok) {
+        const errorData = await allVenders.json().catch(() => null);
+        throw new Error(errorData?.message || "Failed to authenticate");
+      }
+      const vendors = await allVenders.json();
+      const vendor: vender = vendors.find(
+        (vender: vender) =>
+          vender.email === email && vender.password === password,
+      );
+      if (!vendor) {
+        throw new Error("worng password or email" + "or this is not a vendor");
+      } else {
+        //Store vendor's data
+        setIsAuthenticated(true);
+        localStorage.setItem("userType", "vendor");
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("username", vendor.username);
+        localStorage.setItem("email", vendor.email);
+        localStorage.setItem("id", String(vendor.vendorId));
+        navigate("/");
+      }
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         throw new Error(errorData?.message || "Failed to authenticate");
       }
 
       const users = await response.json();
-      console.log(users);
+
       const user: User = users.find(
         (user: User) => user.email === email && user.password === password,
       );
 
       if (!user) {
         throw new Error("Invalid email or password");
-      }
-      console.log(user.customerId);
+      } else {
+        // Store user data in localStorage
 
-      // Store user data in localStorage
-      setIsAuthenticated(true);
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("username", user.username);
-      localStorage.setItem("email", user.email);
-      localStorage.setItem("id", String(user.customerId));
-      localStorage.setItem("gander", user.sex);
-      localStorage.setItem("age", String(user.age));
-      navigate("/");
+        setIsAuthenticated(true);
+        localStorage.setItem("userType", "customer");
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("username", user.username);
+        localStorage.setItem("email", user.email);
+        localStorage.setItem("id", String(user.customerId));
+        localStorage.setItem("gander", user.sex);
+        localStorage.setItem("age", String(user.age));
+        navigate("/");
+      }
     } catch (err) {
       console.error("Login error:", err);
       setError(

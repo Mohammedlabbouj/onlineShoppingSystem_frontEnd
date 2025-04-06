@@ -13,7 +13,10 @@ import Login from "./pages/Loging";
 import Signup from "./pages/SingUp";
 import NavBar from "./components/NavBar";
 import AddProduct from "./pages/AddProduct";
-import Test from "./components/Product"
+import CheckoutPage from "./pages/CheckoutPage";
+import Account from "./pages/Account.tsx";
+import VendorDashboard from "./pages/VendorDashboard.tsx";
+import Test from "./components/Product.tsx";
 
 function App() {
   return (
@@ -36,7 +39,7 @@ interface Product {
 
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(
-    localStorage.getItem("isAuthenticated") === "true"
+    localStorage.getItem("isAuthenticated") === "true",
   );
   const location = useLocation();
 
@@ -46,12 +49,6 @@ function AppContent() {
   }, []);
   const isAuthPage =
     location.pathname === "/login" || location.pathname === "/signup";
-  useEffect(() => {
-    document.body.classList.toggle("overflow-hidden", isAuthPage);
-    return () => {
-      document.body.classList.remove("overflow-hidden");
-    };
-  }, [isAuthPage]);
 
   const handleLogout = () => {
     localStorage.removeItem("isAuthenticated");
@@ -65,11 +62,19 @@ function AppContent() {
           : "pt-16"
       }
     >
-      {!isAuthPage ? <NavBar /> : null}
+      {!isAuthPage && <NavBar />}
       <Routes>
+        <Route path="/test" element={<Test />} />
+
         <Route
           path="/login"
           element={<Login setIsAuthenticated={setIsAuthenticated} />}
+        />
+        <Route
+          path="/checkout/:idCart"
+          element={
+            isAuthenticated ? <CheckoutPage /> : <Navigate to={"/login"} />
+          }
         />
         <Route
           path="/AddProduct"
@@ -77,8 +82,10 @@ function AppContent() {
         />
         <Route path="/signup" element={<Signup />} />
         <Route
-          path="/Test/:id"
-          element={isAuthenticated ? <Test  /> : <Navigate to="/login" />}
+          path="/vendorDashboard"
+          element={
+            isAuthenticated ? <VendorDashboard /> : <Navigate to="/login" />
+          }
         />
         <Route
           path="/"
@@ -91,6 +98,10 @@ function AppContent() {
         <Route
           path="/cart"
           element={isAuthenticated ? <Cart /> : <Navigate to="/login" />}
+        />
+        <Route
+          path="/account"
+          element={isAuthenticated ? <Account /> : <Navigate to="/login" />}
         />
       </Routes>
     </div>
