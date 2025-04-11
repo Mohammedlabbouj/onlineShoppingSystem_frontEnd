@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, User, Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,9 +9,48 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
+import { ProductType } from "@/types/product";
+import { getAllProducts } from "@/functions/allProducts";
 
-export  default function Navbar() {
+//fix this categoryList so it works with the dropdown Menu
+
+const categoryList = {
+  1: "Electronics",
+  2: "Clothing",
+  3: "Home & Kitchen",
+  4: "Beauty & Personal Care",
+  5: "Sports & Outdoors",
+  6: "Toys & Games",
+  7: "Books",
+  8: "Health & Personal Care",
+  9: "Automotive",
+  10: "Pet Supplies",
+};
+
+export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [search, setSearch] = useState("");
+  const [products, setProducts] = useState<ProductType[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      try {
+        const response = await getAllProducts();
+        if (response) {
+          setProducts(response);
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   return (
     <header className=" w-full border-b  fixed top-0 left-0 right-0 z-50 bg-[#29b554] ">
@@ -29,9 +68,7 @@ export  default function Navbar() {
                 href="/"
                 className="flex items-center"
                 onClick={() => setIsMenuOpen(false)}
-              >
-                {/* <span className="text-xl font-bold">ShopMart</span> */}
-              </a>
+              ></a>
             </div>
             <div className="mt-8 px-7">
               <div className="relative">
@@ -49,11 +86,9 @@ export  default function Navbar() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" className="w-[200px]">
-                    <DropdownMenuItem>Electronics</DropdownMenuItem>
-                    <DropdownMenuItem>Clothing</DropdownMenuItem>
-                    <DropdownMenuItem>Home & Kitchen</DropdownMenuItem>
-                    <DropdownMenuItem>Beauty & Personal Care</DropdownMenuItem>
-                    <DropdownMenuItem>Sports & Outdoors</DropdownMenuItem>
+                    {Object.entries(categoryList).map(([key, value]) => (
+                      <DropdownMenuItem key={key}>{value}</DropdownMenuItem>
+                    ))}
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -90,24 +125,34 @@ export  default function Navbar() {
             </nav>
           </SheetContent>
         </Sheet>
-        <a href="/" className="mr-4 mt-4  flex items-center justify-center  md:mr-6">
-          <img src="../public/Quick.png" className="p-1 h-[100px]  "  alt=""  />
+        <a
+          href="/"
+          className="mr-4 mt-4  flex items-center justify-center  md:mr-6"
+        >
+          <img src="../public/Quick.png" className="p-1 h-[100px]  " alt="" />
         </a>
         <div className="hidden flex-1 md:flex md:gap-x-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input placeholder="Search products..." className="pl-8" />
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search products..."
+              className="pl-8"
+            />
           </div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">All Categories</Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
-              <DropdownMenuItem>Electronics</DropdownMenuItem>
-              <DropdownMenuItem>Clothing</DropdownMenuItem>
-              <DropdownMenuItem>Home & Kitchen</DropdownMenuItem>
-              <DropdownMenuItem>Beauty & Personal Care</DropdownMenuItem>
-              <DropdownMenuItem>Sports & Outdoors</DropdownMenuItem>
+              {Object.entries(categoryList).map(([Key, value]) => {
+                return (
+                  <Link to={`/category/${Key}`}>
+                    <DropdownMenuItem key={Key}>{value}</DropdownMenuItem>
+                  </Link>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

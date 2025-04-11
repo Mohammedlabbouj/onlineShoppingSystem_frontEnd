@@ -17,7 +17,8 @@ import CheckoutPage from "./pages/CheckoutPage";
 import Account from "./pages/Account.tsx";
 import VendorDashboard from "./pages/VendorDashboard.tsx";
 import Test from "./components/Product.tsx";
-
+import CategorySearch from "./pages/CategorySearch";
+import Products from "./pages/Products.tsx";
 function App() {
   return (
     <BrowserRouter>
@@ -65,6 +66,16 @@ function AppContent() {
       {!isAuthPage && <NavBar />}
       <Routes>
         <Route path="/test" element={<Test />} />
+        <Route
+          path="/products"
+          element={isAuthenticated ? <Products /> : <Navigate to={"/login"} />}
+        />
+        <Route
+          path="/category/:CATEGORY_SEARCH"
+          element={
+            isAuthenticated ? <CategorySearch /> : <Navigate to={"/login"} />
+          }
+        />
 
         <Route
           path="/login"
