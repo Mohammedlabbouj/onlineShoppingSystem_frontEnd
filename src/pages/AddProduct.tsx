@@ -16,18 +16,17 @@ export default function AddProduct() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<NewProduct>({
-    name: "Fjallraven Backpack",
-    description:
-      "Your perfect pack for everyday use and walks in the forest. Stash your laptop (up to 15 inches) in the padded sleeve, your everyday",
-    price: 109.95,
-    stockQuantity: 10,
-    image: "https://fakestoreapi.com/img/81fPKd-2AYL._AC_SL1500_.jpg",
-    categoryId: 1, // Assuming 1 is for bags/backpacks
-    vendorId: 1, // Assuming 1 is the default vendor
+    name: "",
+    description: "",
+    price: 0,
+    stockQuantity: 0,
+    image: "",
+    categoryId: 0, // Assuming 1 is for bags/backpacks
+    vendorId: 0, // Assuming 1 is the default vendor
   });
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const value =
       e.target.type === "number" ? Number(e.target.value) : e.target.value;
@@ -51,7 +50,7 @@ export default function AddProduct() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(formData),
-        }
+        },
       );
 
       if (!response.ok) {
@@ -181,13 +180,14 @@ export default function AddProduct() {
           <button
             type="submit"
             disabled={isLoading}
+            onClick={() => navigate("/vendor")}
             className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 disabled:opacity-50"
           >
             {isLoading ? "Creating..." : "Add Product"}
           </button>
           <button
             type="button"
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/vendor")}
             className="px-4 py-2 bg-gray-200 text-black rounded-md hover:bg-gray-300"
           >
             Cancel

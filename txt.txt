@@ -1,0 +1,75 @@
+.
+├── README.md
+├── components.json
+├── eslint.config.js
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.cjs
+├── public
+│   ├── Quick.png
+│   ├── google.svg
+│   ├── user.svg
+│   └── vite.svg
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── components
+│   │   ├── Button.tsx
+│   │   ├── CustomerUi.tsx
+│   │   ├── Footer.tsx
+│   │   ├── Foryou.tsx
+│   │   ├── Loading.tsx
+│   │   ├── NavBar.tsx
+│   │   ├── OrderReviewPopup.tsx
+│   │   ├── ProductCard.tsx
+│   │   ├── ProductImage.tsx
+│   │   ├── PurchaseOptions.tsx
+│   │   ├── Sidebar.tsx
+│   │   ├── StatCard.tsx
+│   │   ├── Test.tsx
+│   │   ├── VendorUi.tsx
+│   │   └── ui
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── dialog.tsx
+│   │       ├── dropdown-menu.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── popover.tsx
+│   │       ├── select.tsx
+│   │       └── sheet.tsx
+│   ├── functions
+│   │   ├── CartFunctions.tsx
+│   │   ├── allProducts.ts
+│   │   └── getProduct.ts
+│   ├── index.css
+│   ├── lib
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── pages
+│   │   ├── Account.tsx
+│   │   ├── AddProduct.tsx
+│   │   ├── Cart.tsx
+│   │   ├── CategorySearch.tsx
+│   │   ├── CheckoutPage.tsx
+│   │   ├── Home.tsx
+│   │   ├── Loging.tsx
+│   │   ├── Product.tsx
+│   │   ├── Products.tsx
+│   │   ├── SingUp.tsx
+│   │   ├── VendorDashboard.tsx
+│   │   └── logOut.ts
+│   ├── store
+│   ├── types
+│   │   ├── product.ts
+│   │   └── vendor.ts
+│   └── vite-env.d.ts
+├── tailwind.config.js
+├── tsconfig.app.json
+├── tsconfig.json
+├── tsconfig.node.json
+├── txt.txt
+└── vite.config.ts
+
+9 directories, 63 files

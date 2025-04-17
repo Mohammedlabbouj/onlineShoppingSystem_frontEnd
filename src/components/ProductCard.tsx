@@ -1,9 +1,9 @@
 // src/components/ProductCard.tsx
 import React from "react";
-import { Product } from "../types/vendor"; // Adjust path if needed
+import { ProductType } from "@/types/product";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductType;
   onDelete: (id: string | number) => void; // Add functions for real actions
   onEdit: (id: string | number) => void;
 }
@@ -18,7 +18,8 @@ const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image */}
       <div className="flex-shrink-0 w-full sm:w-24 h-24 mb-4 sm:mb-0 bg-gray-100 rounded flex items-center justify-center">
         <img
-          src={product.imageUrl}
+          src={product.image}
+
           alt={product.name}
           className="max-h-full max-w-full object-contain"
         />
@@ -36,19 +37,19 @@ const ProductCard: React.FC<ProductCardProps> = ({
           <p className="text-lg font-bold text-gray-900 mb-1">
             ${product.price.toFixed(2)}
           </p>
-          <p className="text-sm text-gray-600">Qt: {product.quantity}</p>
+          <p className="text-sm text-gray-600">Qt: {product.stockQuantity}</p>
         </div>
 
         {/* Actions */}
         <div className="flex space-x-2 mt-3 sm:mt-0 self-end">
           <button
-            onClick={() => onDelete(product.id)}
+            onClick={() => onDelete(product.productId)}
             className="px-3 py-1 text-xs font-medium text-white bg-red-500 rounded hover:bg-red-600 transition duration-150 ease-in-out"
           >
             Delete
           </button>
           <button
-            onClick={() => onEdit(product.id)}
+            onClick={() => onEdit(product.productId)}
             className="px-3 py-1 text-xs font-medium text-white bg-blue-500 rounded hover:bg-blue-600 transition duration-150 ease-in-out"
           >
             Edit

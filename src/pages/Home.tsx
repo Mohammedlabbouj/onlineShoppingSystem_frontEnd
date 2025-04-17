@@ -9,7 +9,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ArrowRight, Star } from "lucide-react";
-import { ProductType } from "./Product";
+import { ProductType } from "@/types/product";
 import { getCartId, handleAddToCart } from "@/functions/CartFunctions";
 export interface Product {
   productId: number;
@@ -42,6 +42,7 @@ export default function Home() {
   const [products, setProducts] = useState<ProductType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  console.log(localStorage.getItem("userType"));
 
   useEffect(() => {
     const getAllProducts = async () => {
@@ -64,7 +65,7 @@ export default function Home() {
       } catch (err) {
         console.error("Error fetching products:", err);
         setError(
-          err instanceof Error ? err.message : "Failed to load products"
+          err instanceof Error ? err.message : "Failed to load products",
         );
       } finally {
         setIsLoading(false);
@@ -212,22 +213,22 @@ export function ProductCard({ product, cartId }: ProductCardProps) {
   );
 }
 
-function ProductsSection({  products }: ProductsSectionProps) {
-    const [cartId, setCartId] = useState<number | null>(null);
+function ProductsSection({ products }: ProductsSectionProps) {
+  const [cartId, setCartId] = useState<number | null>(null);
 
-    useEffect(() => {
-      const getId = async () => {
-        try {
-          const fetchedId = await getCartId();
-          setCartId(fetchedId);
-          console.log("Cart ID:", fetchedId);
-        } catch (error) {
-          console.error("Error fetching cart ID:", error);
-        }
-      };
+  useEffect(() => {
+    const getId = async () => {
+      try {
+        const fetchedId = await getCartId();
+        setCartId(fetchedId);
+        console.log("Cart ID:", fetchedId);
+      } catch (error) {
+        console.error("Error fetching cart ID:", error);
+      }
+    };
 
-      getId();
-    }, []);
+    getId();
+  }, []);
   return (
     <>
       {/* Featured Products Section */}

@@ -216,9 +216,11 @@ export default function CartPage() {
                   ))}
 
                   <div className="mt-6 flex justify-end">
-                    <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
-                      <Link to={"/"}>Add an other item</Link>
-                    </Button>
+                    <Link to={"/"}>
+                      <Button className="bg-emerald-500 hover:bg-emerald-600 text-white">
+                        Add an other item
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </Card>

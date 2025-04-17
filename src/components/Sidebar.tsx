@@ -3,12 +3,16 @@ import React from "react";
 
 // Assume you'd use React Router or similar for navigation
 // We'll just use a simple active prop for now
+type ActivePageType = "Dashboard" | "Products" | "Reviews";
 interface SidebarProps {
   activePage: "Dashboard" | "Products" | "Reviews"; // Add other pages as needed
+  handelLogOut: () => void;
+  onNavigate: (page: ActivePageType) => void; // Function to handle navigation
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activePage }) => {
-  const navItems = ["Dashboard", "Products", "Reviews", "Logout"];
+
+const Sidebar: React.FC<SidebarProps> = ({ activePage, handelLogOut ,  onNavigate }) => {
+  const navItems = ["Dashboard", "Products", "Reviews"];
 
   const getNavItemClasses = (item: string) => {
     const baseClasses =
@@ -29,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage }) => {
         <img
           src="../../public/Quick.png"
           alt="Logo"
-          className="w-[170px] h-[150px] mx-auto mb-2"
+          className="w-[170px] h-[150px] mx-auto mb-2    "
         />
       </div>
       {/* Navigation */}
@@ -38,9 +42,20 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage }) => {
           {navItems.map((item) => (
             <li key={item}>
               {/* In a real app, use <Link> from react-router-dom */}
-              <button className={getNavItemClasses(item)}>{item}</button>
+
+              <button  
+                onClick={() => onNavigate(item)} // Call the navigation Function
+                className={getNavItemClasses(item)}>{item}</button>
             </li>
           ))}
+          <li>
+            <button
+              onClick={handelLogOut}
+              className={getNavItemClasses("hello")}
+            >
+              Logout
+            </button>
+          </li>
         </ul>
       </nav>
       {/* Optional Footer or User Info in Sidebar */}

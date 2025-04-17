@@ -40,8 +40,6 @@ export default function Login({ setIsAuthenticated }: Props) {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        // credentials: "include", // Include cookies if needed
-        // mode: "cors", // Explicitly set CORS mode
       });
       const allVenders = await fetch("http://localhost:9090/api/vendors/all", {
         method: "GET",
@@ -61,7 +59,7 @@ export default function Login({ setIsAuthenticated }: Props) {
           vender.email === email && vender.password === password,
       );
       if (!vendor) {
-        throw new Error("worng password or email" + "or this is not a vendor");
+        console.error("worng password or email" + "or this is not a vendor");
       } else {
         //Store vendor's data
         setIsAuthenticated(true);
@@ -84,7 +82,7 @@ export default function Login({ setIsAuthenticated }: Props) {
       );
 
       if (!user) {
-        throw new Error("Invalid email or password");
+        console.error("Invalid email or password");
       } else {
         // Store user data in localStorage
 
