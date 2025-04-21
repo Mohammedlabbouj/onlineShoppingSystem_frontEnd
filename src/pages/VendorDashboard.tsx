@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
-import { StoreInfo, Vendor } from "../types/vendor"; // Adjust path
+import { StoreInfo } from "../types/vendor";
 import Dashboard from "@/components/Dashboard";
 import Products from "@/components/ProductsVendor";
-import { getVendor } from "@/functions/getVendor"; // Adjust path
+import Reviews from "@/components/ProductReviewSummaryCard";
+import ReviewsModal from "@/components/ReviewsModal";
+import { getVendor } from "@/functions/getVendor";
+import { Review, ProductType } from "@/types/product";
+import { getProductsByVendorId } from "@/functions/getProductsByid";
 
 interface Props {
   handelLogOut: () => void;
@@ -13,7 +17,7 @@ interface VendorInfo {
   username: string;
   email: string;
   password: string;
-  products: [];
+  products: ProductType[];
   orders: [];
   payments: [];
 }
@@ -25,6 +29,28 @@ function VendorDashboard({ handelLogOut }: Props) {
   // --- State for the active page ---
   const [activePage, setActivePage] = useState<ActivePageType>("Dashboard");
   const [vendorInfo, setVendorInfo] = useState<VendorInfo>();
+  const [productsReviews, setProductsReviews] = useState<ProductType[]>([]);
+  // --- State for Modal ---
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [selectedReviews, setSelectedReviews] = useState<Review[]>([]);
+  const [selectedProductName, setSelectedProductName] = useState<string>("");
+  let vendorId = localStorage.getItem("id");
+  useEffect(() => {
+    // Fetch products from the API
+    const fetchVendorProducts = async () => {
+      try {
+        const response = await getProductsByVendorId(vendorId as string);
+        if (response) {
+          setProductsReviews(response);
+        } else {
+          console.error("No products found");
+        }
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      }
+    };
+    fetchVendorProducts();
+  }, [vendorId]);
 
   useEffect(() => {
     // Fetch vendor data from the API
@@ -34,6 +60,7 @@ function VendorDashboard({ handelLogOut }: Props) {
         if (vendorId) {
           const response = await getVendor(vendorId);
           setVendorInfo(response);
+          console.log("Vendor Info:", response);
         } else {
           console.error("No vendor ID found in local storage");
         }
@@ -50,30 +77,23 @@ function VendorDashboard({ handelLogOut }: Props) {
     pictureUrl: undefined, // Add a URL for a real picture
   };
 
-  const vendor: Vendor = {
-    name: "mr vendor",
-  };
-
-  // --- Mock Reviews (Placeholder - replace with real data/API) ---
-  const reviews = [
-    { id: 1, user: "Customer A", rating: 5, comment: "Great product!" },
-    {
-      id: 2,
-      user: "Customer B",
-      rating: 4,
-      comment: "Works well, fast shipping.",
-    },
-    {
-      id: 3,
-      user: "Customer C",
-      rating: 3,
-      comment: "Okay, but packaging was damaged.",
-    },
-  ];
-  // --- Handler for Sidebar Navigation ---
   const handleNavigate = (page: ActivePageType) => {
     setActivePage(page);
   };
+  // --- Modal Handlers ---
+  const handleOpenReviewsModal = (reviews: Review[], productName: string) => {
+    setSelectedReviews(reviews);
+    setSelectedProductName(productName);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseReviewsModal = () => {
+    setIsModalOpen(false);
+    setSelectedReviews([]); // Clear selected reviews
+    setSelectedProductName("");
+  };
+
+  console.log("products", vendorInfo?.products);
 
   // --- Function to render content based on activePage ---
   const renderContent = () => {
@@ -87,30 +107,22 @@ function VendorDashboard({ handelLogOut }: Props) {
       case "Reviews":
         return (
           <section>
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">
-              Customer Reviews
+            <h2 className="text-xl font-semibold text-gray-700 mb-6">
+              Product Reviews & Ratings
             </h2>
-            {reviews.length > 0 ? (
-              <div className="bg-white p-6 rounded-lg shadow space-y-4">
-                {reviews.map((review) => (
-                  <div
-                    key={review.id}
-                    className="border-b pb-3 last:border-b-0"
-                  >
-                    <p className="font-semibold">
-                      {review.user} -{" "}
-                      <span className="text-yellow-500">
-                        {"★".repeat(review.rating)}
-                        {"☆".repeat(5 - review.rating)}
-                      </span>
-                    </p>
-                    <p className="text-gray-600 mt-1">{review.comment}</p>
-                  </div>
+            {productsReviews.length > 0 ? (
+              <div className="space-y-6">
+                {productsReviews.map((product) => (
+                  <Reviews
+                    key={product.productId}
+                    product={product}
+                    onSeeReviewsClick={handleOpenReviewsModal} // Pass the handler
+                  />
                 ))}
               </div>
             ) : (
               <div className="text-center py-10 text-gray-500 bg-white rounded-lg shadow">
-                No reviews received yet.
+                No products found or no products have reviews yet.
               </div>
             )}
           </section>
@@ -149,12 +161,21 @@ function VendorDashboard({ handelLogOut }: Props) {
               {vendorInfo?.username || "Vendor Name"}
             </h1>
           </div>
-          <span className="text-lg text-gray-800">Welcome {vendor.name}</span>
+          <span className="text-lg text-gray-800">
+            Welcome {vendorInfo?.username}
+          </span>
         </header>
 
         {/* Render Content Based on Active Page */}
         {renderContent()}
       </main>
+      {/* Render the Modal (conditionally) */}
+      <ReviewsModal
+        isOpen={isModalOpen}
+        onClose={handleCloseReviewsModal}
+        reviews={selectedReviews}
+        productName={selectedProductName}
+      />
     </div>
   );
 }

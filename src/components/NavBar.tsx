@@ -148,7 +148,7 @@ export default function Navbar() {
             <DropdownMenuContent align="end" className="w-[200px]">
               {Object.entries(categoryList).map(([Key, value]) => {
                 return (
-                  <Link to={`/category/${Key}`}>
+                  <Link key={Key} to={`/category/${Key}`}>
                     <DropdownMenuItem key={Key}>{value}</DropdownMenuItem>
                   </Link>
                 );
