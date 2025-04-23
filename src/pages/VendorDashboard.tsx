@@ -23,7 +23,7 @@ interface VendorInfo {
 }
 
 // Define the possible page types
-type ActivePageType = "Dashboard" | "Products" | "Reviews";
+type ActivePageType = "Dashboard" | "Products" | "Reviews" | "HotTrends";
 
 function VendorDashboard({ handelLogOut }: Props) {
   // --- State for the active page ---
@@ -92,8 +92,6 @@ function VendorDashboard({ handelLogOut }: Props) {
     setSelectedReviews([]); // Clear selected reviews
     setSelectedProductName("");
   };
-
-  console.log("products", vendorInfo?.products);
 
   // --- Function to render content based on activePage ---
   const renderContent = () => {

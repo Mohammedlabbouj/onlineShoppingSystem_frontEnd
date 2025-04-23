@@ -1,18 +1,19 @@
-// src/components/Sidebar.tsx
 import React from "react";
 
-// Assume you'd use React Router or similar for navigation
-// We'll just use a simple active prop for now
-type ActivePageType = "Dashboard" | "Products" | "Reviews";
+type ActivePageType = "Dashboard" | "Products" | "Reviews" | "HotTrendes"; // Add other pages as needed
 interface SidebarProps {
-  activePage: "Dashboard" | "Products" | "Reviews"; // Add other pages as needed
+  activePage: "Dashboard" | "Products" | "Reviews" | "HotTrendes"; // Add other pages as needed
   handelLogOut: () => void;
   onNavigate: (page: ActivePageType) => void; // Function to handle navigation
 }
 
-
-const Sidebar: React.FC<SidebarProps> = ({ activePage, handelLogOut ,  onNavigate }) => {
-  const navItems = ["Dashboard", "Products", "Reviews"];
+const Sidebar: React.FC<SidebarProps> = ({
+  activePage,
+  handelLogOut,
+  onNavigate,
+}) => {
+  const navItems = ["Dashboard", "Products", "Reviews", "HotTrends"]; // Add other pages as needed
+  const [showLogout, setShowLogout] = React.useState(false);
 
   const getNavItemClasses = (item: string) => {
     const baseClasses =
@@ -43,14 +44,17 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, handelLogOut ,  onNavigat
             <li key={item}>
               {/* In a real app, use <Link> from react-router-dom */}
 
-              <button  
+              <button
                 onClick={() => onNavigate(item)} // Call the navigation Function
-                className={getNavItemClasses(item)}>{item}</button>
+                className={getNavItemClasses(item)}
+              >
+                {item}
+              </button>
             </li>
           ))}
           <li>
             <button
-              onClick={handelLogOut}
+              onClick={() => setShowLogout(true)} // Show logout confirmation
               className={getNavItemClasses("hello")}
             >
               Logout
@@ -58,10 +62,62 @@ const Sidebar: React.FC<SidebarProps> = ({ activePage, handelLogOut ,  onNavigat
           </li>
         </ul>
       </nav>
-      {/* Optional Footer or User Info in Sidebar */}
-      {/* <div>Footer</div> */}
+      {/* Logout Confirmation Popup */}
+      {showLogout && (
+        <PopUpLogout
+          setShowLogout={setShowLogout}
+          handelLogOut={handelLogOut}
+        />
+      )}
     </div>
   );
 };
 
 export default Sidebar;
+
+export function PopUpLogout({
+  setShowLogout,
+  handelLogOut,
+}: {
+  setShowLogout: (show: boolean) => void;
+  handelLogOut: () => void;
+}) {
+  const handleLogout = () => {
+    handelLogOut();
+    console.log("Logging out...");
+    setShowLogout(false);
+  };
+
+  return (
+    <div
+      onClick={() => setShowLogout(false)}
+      className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the popup
+        className="relative z-50 w-full max-w-md rounded-lg bg-white p-6 text-gray-800 shadow-2xl animate-fade-in"
+      >
+        <h2 className="mb-4 text-xl font-semibold text-center">
+          Confirm Logout
+        </h2>
+        <p className="mb-6 text-center text-gray-600">
+          Are you sure you want to log out?
+        </p>
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+          >
+            Yes, log me out
+          </button>
+          <button
+            onClick={() => setShowLogout(false)}
+            className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

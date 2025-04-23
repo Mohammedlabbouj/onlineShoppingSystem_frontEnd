@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Search, ShoppingCart, User, Menu } from "lucide-react";
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Menu,
+  MessageCircle as MessageIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -157,7 +163,13 @@ export default function Navbar() {
           </DropdownMenu>
         </div>
         <div className="flex items-center gap-2 ml-auto">
-          <a href="/cart">
+          <Link to="/messages">
+            <Button variant="ghost" size="icon">
+              <MessageIcon className="h-5 w-5" />
+              <span className="sr-only">Messages</span>
+            </Button>
+          </Link>
+          <Link to="/cart">
             <Button variant="ghost" size="icon" className="relative">
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
@@ -165,7 +177,7 @@ export default function Navbar() {
               </span>
               <span className="sr-only">Cart</span>
             </Button>
-          </a>
+          </Link>
           <a href="/account" className="hidden md:block">
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import  {Button} from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ChevronDown } from "lucide-react";
+import { MessageCircle as MessageIcon } from "lucide-react";
 interface PurchaseOptionsProp {
   product: {
     productId: number;
@@ -173,9 +174,7 @@ export function PurchaseOptions({ product }: PurchaseOptionsProp) {
         ) : (
           <Button
             className="w-full bg-red-500 hover:bg-red-600"
-            onClick={() => {
-              handleRemoveFromCart();
-            }}
+            onClick={handleRemoveFromCart}
           >
             Remove from cart
           </Button>
@@ -184,9 +183,33 @@ export function PurchaseOptions({ product }: PurchaseOptionsProp) {
         <Button className="w-full bg-amber-500 hover:bg-amber-600">
           Buy now
         </Button>
+
+        {/* 🧑‍💼 Seller Info Section */}
+        <div className="flex items-center gap-4 pt-4 border-t mt-4">
+          {/* Avatar Circle */}
+          <div className="w-12 h-12 rounded-full bg-gray-200 overflow-hidden">
+            <img
+              src="https://via.placeholder.com/150"
+              alt="Seller"
+              className="w-full h-full object-cover"
+            />
+          </div>
+
+          {/* Name and Connect Button */}
+          <div className="flex-1">
+            <span className="block text-sm font-semibold text-gray-800">
+              Alex Johnson
+            </span>
+            <Button
+              variant="outline"
+              className="mt-1 text-sm px-3 py-1.5 flex items-center gap-2 bg-green-500"
+            >
+              Connect
+              <MessageIcon className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
     </Card>
   );
 }
-
-

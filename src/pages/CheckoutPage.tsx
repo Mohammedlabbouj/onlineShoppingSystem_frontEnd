@@ -63,7 +63,7 @@ interface PaymentMethod {
 
 export default function CheckoutPage() {
   const { idCart } = useParams<{ idCart: string }>();
-  const [address, setAddress] = useState<Address | null>(null);
+  const [address, setAddress] = useState<Address | null>();
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod | null>(
     null,
   );
@@ -72,8 +72,68 @@ export default function CheckoutPage() {
   const [placedOrder, setPlacedOrder] = useState(false);
   const [isAddressDialogOpen, setIsAddressDialogOpen] = useState(false);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
+  const [addressForm, setAddressForm] = useState<Address>({
+    country: "",
+    fullName: "",
+    phoneNumber: "",
+    streetAddress: "",
+    city: "",
+    region: "",
+    postalCode: "",
+  });
 
   useEffect(() => {
+    const id = localStorage.getItem("id");
+    const getCustomerAddress = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:9090/api/shipping-addresses/customer/${id}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "application/json",
+            },
+          },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch address");
+        }
+        const data: {
+          city: string;
+          country: string;
+          customerId: number;
+          fullName: string;
+          phoneNumber: string;
+          postalCode: string;
+          state: string;
+          street: string;
+        }[] = await response.json();
+        setAddress({
+          country: data[0].country,
+          fullName: data[0].fullName,
+          phoneNumber: data[0].phoneNumber,
+          streetAddress: data[0].street,
+          city: data[0].city,
+          region: data[0].state,
+          postalCode: data[0].postalCode,
+        });
+        setAddressForm({
+          country: data[0].country,
+          fullName: data[0].fullName,
+          phoneNumber: data[0].phoneNumber,
+          streetAddress: data[0].street,
+          city: data[0].city,
+          region: data[0].state,
+          postalCode: data[0].postalCode,
+        } as Address);
+        console.log("Address data:", data);
+      } catch (error) {
+        throw new Error("Failed to fetch address");
+      }
+    };
+    getCustomerAddress();
+
     const getAllProductsFromCart = async () => {
       try {
         const cartResponse = await fetch(
@@ -141,7 +201,7 @@ export default function CheckoutPage() {
           postalCode: addressData.postalCode, // Use parameter
           fullName: addressData.fullName, // Use parameter
           phoneNumber: addressData.phoneNumber, // Use parameter
-          customerId : localStorage.getItem("id"),
+          customerId: localStorage.getItem("id"),
         }),
       },
     );
@@ -158,16 +218,6 @@ export default function CheckoutPage() {
       // return result;
     }
   };
-
-  const [addressForm, setAddressForm] = useState<Address>({
-    country: "",
-    fullName: "",
-    phoneNumber: "",
-    streetAddress: "",
-    city: "",
-    region: "",
-    postalCode: "",
-  });
 
   const [paymentForm, setPaymentForm] = useState<PaymentMethod>({
     cardNumber: "",
@@ -319,23 +369,29 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between">
                     <span>Items:</span>
-                    <span>{cartItems.length}</span>
+                    <span>
+                      {address && paymentMethod ? cartItems.length : "----"}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping handling:</span>
-                    <span>10$</span>
+                    <span> {address && paymentMethod ? "10$" : "----"} </span>
                   </div>
                   <div className="border-t pt-4 flex justify-between font-medium">
                     <span>Order Total:</span>
-                    <span>{TotalPrice}$</span>
+                    <span>
+                      {address && paymentMethod ? TotalPrice + "$" : "----"}
+                    </span>
                   </div>
                 </div>
-                <Button
-                  className="w-full mt-2 bg-amber-400 hover:bg-amber-500 text-black mb-6"
-                  onClick={() => setIsPopupVisible(true)}
-                >
-                  Review items and shipping
-                </Button>
+                {address && paymentMethod && (
+                  <Button
+                    className="w-full mt-2 bg-amber-400 hover:bg-amber-500 text-black mb-6"
+                    onClick={() => setIsPopupVisible(true)}
+                  >
+                    Review items and shipping
+                  </Button>
+                )}
               </Card>
             </div>
           </div>
