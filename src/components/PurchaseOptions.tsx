@@ -86,6 +86,7 @@ export function PurchaseOptions({ product }: PurchaseOptionsProp) {
         throw new Error("Failed to add item to cart");
       }
       setInCart(!inCart); // Update inCart state after successful addition
+      setQuantity(1);
 
       // Show success message or notification here
       alert("Item added to cart successfully!");
@@ -202,7 +203,7 @@ export function PurchaseOptions({ product }: PurchaseOptionsProp) {
             </span>
             <Button
               variant="outline"
-              className="mt-1 text-sm px-3 py-1.5 flex items-center gap-2 bg-green-500"
+              className="mt-1 text-sm px-3 py-1.5 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700"
             >
               Connect
               <MessageIcon className="w-4 h-4" />

@@ -11,6 +11,8 @@ import Account from "@/pages/Account.tsx";
 import Products from "@/pages/Products";
 import CategorySearch from "@/pages/CategorySearch";
 import Test from "@/components/Test.tsx";
+import Orders from "@/pages/OrdersCustomer";
+import ProductSearch from "@/pages/ProductSearch";
 
 interface CustomerUiProps {
   isAuthenticated: boolean;
@@ -20,11 +22,30 @@ interface CustomerUiProps {
 function CustomerUi({ isAuthenticated, setIsAuthenticated }: CustomerUiProps) {
   const location = useLocation();
   const isAuthPage =
-    location.pathname === "/login" || location.pathname === "/signup";
+    location.pathname === "/login" ||
+    location.pathname === "/signup" ||
+    location.pathname === "/Test";
   return (
     <div className={isAuthPage ? "" : "pt-16"}>
       {!isAuthPage && <NavBar />}
       <Routes>
+        <Route 
+          path = "/orders"
+          element={
+            isAuthenticated ? (
+            <Orders />
+            ) : (
+              <Navigate to={"/login"} />
+            )
+          }
+        />
+        <Route
+          path="/product-search/:search"
+          element={
+            isAuthenticated ? <ProductSearch /> : <Navigate to={"/login"} />
+          }
+        />
+
         <Route path="/test" element={<Test />} />
         <Route
           path="/products"
@@ -36,6 +57,7 @@ function CustomerUi({ isAuthenticated, setIsAuthenticated }: CustomerUiProps) {
             isAuthenticated ? <CategorySearch /> : <Navigate to={"/login"} />
           }
         />
+
 
         <Route
           path="/login"

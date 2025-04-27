@@ -28,7 +28,16 @@ export default function Login({ setIsAuthenticated }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const removeExictingLocalStorge = () => {
+    localStorage.removeItem("isAuthenticated");
+    localStorage.removeItem("userType");
+    localStorage.removeItem("id");
+    localStorage.removeItem("username");
+    localStorage.removeItem("password");
+    localStorage.removeItem("email");
+  };
   const handleLogin = async (e: React.FormEvent) => {
+    removeExictingLocalStorge();
     e.preventDefault();
     setError(null);
     setIsLoading(true);

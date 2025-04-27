@@ -9,11 +9,11 @@ export const getProductFunction = async (id: string) => {
     });
     if (!response.ok) {
       throw new Error("Failed to fetch product");
-    } 
+    }
     const data = await response.json();
 
     return data;
   } catch (err) {
     throw err;
-  } 
+  }
 };

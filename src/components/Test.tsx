@@ -1,295 +1,323 @@
-import { useEffect, useState } from "react";
-import { Search, ShoppingCart, User, Menu } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-// Import Popover components
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Link, useNavigate } from "react-router-dom"; // Import useNavigate
-import { ProductType } from "@/types/product";
-import { getAllProducts } from "@/functions/allProducts";
+import React, { useState, useRef, useEffect } from "react";
+import { Avatar } from "./Avater";
+import ConversationListItem from "./ConversationListItem";
+import MessageBubble from "./MessageBubble";
+import ChatInput from "./ChatInput";
+import { Message } from "@/types/Message";
+import { Conversation } from "@/types/Conversation";
 
-const categoryList = {
-  1: "Electronics",
-  2: "Clothing",
-  3: "Home & Kitchen",
-  4: "Beauty & Personal Care",
-  5: "Sports & Outdoors",
-  6: "Toys & Games",
-  7: "Books",
-  8: "Health & Personal Care",
-  9: "Automotive",
-  10: "Pet Supplies",
+interface ChatAppProps {}
+
+// --- Mock Data ---
+const mockConversations: Conversation[] = [
+  {
+    id: 1,
+    name: "Vendor A",
+    lastMessage: "Hello! How can I help you?",
+    timestamp: "10:45",
+    unreadCount: 1,
+    avatarUrl: "https://placehold.co/100x100/E0E0E0/BDBDBD?text=VA", // Placeholder
+  },
+  {
+    id: 2,
+    name: "Vendor B",
+    lastMessage: "ok",
+    timestamp: "08:30",
+    avatarUrl: "https://placehold.co/100x100/D1C4E9/B39DDB?text=VB", // Placeholder
+  },
+  {
+    id: 3,
+    name: "Vendor C",
+    lastMessage: "Yes, It will be restocked...",
+    timestamp: "17 Apr",
+    avatarUrl: "https://placehold.co/100x100/C8E6C9/A5D6A7?text=VC", // Placeholder
+  },
+  {
+    id: 4,
+    name: "Vendor D",
+    lastMessage: "Product has been shipped",
+    timestamp: "16 Apr",
+    avatarUrl: "https://placehold.co/100x100/BBDEFB/90CAF9?text=VD", // Placeholder
+  },
+];
+
+const mockMessages: { [key: number]: Message[] } = {
+  1: [
+    {
+      id: 101,
+      sender: "them",
+      text: "Hello! How can I help you?",
+      timestamp: "10:45",
+    },
+    {
+      id: 102,
+      sender: "me",
+      text: "I'd like to know the status of my order",
+      timestamp: "10:45",
+    },
+    {
+      id: 103,
+      sender: "them",
+      text: "Your order has been confirmed.",
+      timestamp: "10:50",
+    },
+    {
+      id: 104,
+      sender: "me",
+      text: "When can I expect it to be delivered?",
+      timestamp: "10:52",
+    },
+    {
+      id: 105,
+      sender: "them",
+      text: "It should be delivered by tomorrow.",
+      timestamp: "10:55",
+    },
+    {
+      id: 106,
+      sender: "me",
+      text: "Thank you for the information!",
+      timestamp: "10:59",
+    },
+  ],
+  2: [{ id: 201, sender: "them", text: "ok", timestamp: "08:30" }],
+  3: [
+    {
+      id: 301,
+      sender: "them",
+      text: "Yes, It will be restocked soon.",
+      timestamp: "17 Apr",
+    },
+  ],
+  4: [
+    {
+      id: 401,
+      sender: "them",
+      text: "Product has been shipped",
+      timestamp: "16 Apr",
+    },
+    { id: 402, sender: "me", text: "Great, thanks!", timestamp: "16 Apr" },
+  ],
 };
 
-export default function Navbar() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [products, setProducts] = useState<ProductType[]>([]);
-  const [loading, setLoading] = useState(true);
-  // State for filtered search results
-  const [filteredProducts, setFilteredProducts] = useState<ProductType[]>([]);
-  // State to control popover visibility based on input focus
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const navigate = useNavigate(); // Hook for navigation
+// --- Main Chat Application Component ---
+const App: React.FC<ChatAppProps> = () => {
+  const [conversations, setConversations] =
+    useState<Conversation[]>(mockConversations);
+  const [selectedConversationId, setSelectedConversationId] = useState<
+    number | null
+  >(conversations[0]?.id ?? null); // Select first convo initially
+  const [messages, setMessages] = useState<{ [key: number]: Message[] }>(
+    mockMessages,
+  );
+  const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch all products on mount
+  const messagesEndRef = useRef<HTMLDivElement>(null); // Ref for scrolling
+
+  // Scroll to bottom when messages change or conversation is selected
   useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      try {
-        const response = await getAllProducts();
-        if (response) {
-          setProducts(response);
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, selectedConversationId]);
 
-    fetchProducts();
-  }, []);
+  const selectedConversation = conversations.find(
+    (c) => c.id === selectedConversationId,
+  );
+  const currentMessages = selectedConversationId
+    ? messages[selectedConversationId] || []
+    : [];
 
-  // Filter products based on search input
-  useEffect(() => {
-    if (search.trim() === "") {
-      setFilteredProducts([]);
-      return; // Clear results if search is empty
-    }
-
-    if (products.length > 0) {
-      const lowerCaseSearch = search.toLowerCase();
-      const results = products
-        .filter(
-          (product) => product.name.toLowerCase().includes(lowerCaseSearch),
-          // You could also search in description, category, etc.
-          // || product.description.toLowerCase().includes(lowerCaseSearch)
-        )
-        .slice(0, 8); // Limit the number of suggestions shown (e.g., top 8)
-
-      setFilteredProducts(results);
-    }
-  }, [search, products]); // Re-run when search term or products list changes
-
-  // Function to handle clicking a suggestion
-  const handleSuggestionClick = (productId: string | number) => {
-    // Assuming productId is string or number
-    setSearch(""); // Clear search input
-    setFilteredProducts([]); // Clear suggestions
-    setIsSearchFocused(false); // Close popover
-    navigate(`/product/${productId}`); // Navigate to product page (update path if needed)
+  const handleSelectConversation = (id: number) => {
+    setSelectedConversationId(id);
+    // Optionally mark messages as read here
+    const updatedConversations = conversations.map((convo) =>
+      convo.id === id ? { ...convo, unreadCount: 0 } : convo,
+    );
+    setConversations(updatedConversations);
   };
 
-  // --- Component Return ---
-  return (
-    <header className=" w-full border-b fixed top-0 left-0 right-0 z-50 bg-[#29b554] ">
-      <div className="container flex h-16 items-center px-4 sm:px-6">
-        {/* --- Mobile Menu --- */}
-        <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-6 w-6" />
-              <span className="sr-only">Toggle menu</span>
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="pr-0">
-            <div className="px-7">
-              <a
-                href="/"
-                className="flex items-center"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {/* Maybe add mobile logo here? */}
-              </a>
-            </div>
-            <div className="mt-8 px-7">
-              {/* Consider adding search suggestions to mobile too if desired */}
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search products..." className="pl-8" />
-              </div>
-              <div className="mt-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between"
-                    >
-                      All Categories
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-[200px]">
-                    {Object.entries(categoryList).map(([key, value]) => (
-                      <Link
-                        key={key}
-                        to={`/category/${key}`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <DropdownMenuItem>{value}</DropdownMenuItem>
-                      </Link>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-            </div>
-            <nav className="mt-6 flex flex-col gap-4 px-7">
-              {/* Mobile Nav Links */}
-              <Link
-                to="/"
-                className="text-lg font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/products"
-                className="text-lg font-medium"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Products
-              </Link>
-              {/* Add other links */}
-            </nav>
-          </SheetContent>
-        </Sheet>
+  const handleSendMessage = (text: string) => {
+    if (!selectedConversationId) return;
 
-        {/* --- Logo --- */}
-        <Link
-          to="/" // Use Link for internal navigation
-          className="mr-4 mt-4 flex items-center justify-center md:mr-6"
-        >
-          {/* Ensure path to image is correct */}
-          <img
-            src="/Quick.png"
-            className="p-1 h-[50px] md:h-[60px]"
-            alt="Quick Logo"
-          />
-        </Link>
+    const newMessage: Message = {
+      id: Date.now(), // Simple unique ID for demo
+      sender: "me",
+      text: text,
+      timestamp: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      }), // Current time
+    };
 
-        {/* --- Desktop Search & Categories --- */}
-        <div className="hidden flex-1 md:flex md:items-center md:gap-x-6">
-          {/* Search Input with Popover Suggestions */}
-          <Popover
-            open={
-              isSearchFocused &&
-              search.trim() !== "" &&
-              filteredProducts.length > 0
-            }
-          >
-            <PopoverTrigger asChild>
-              {/* The trigger needs a DOM element child, Input works directly,
-                  but wrapping in div allows better width control for PopoverContent */}
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground z-10" />
-                <Input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  onBlur={() => {
-                    // Delay hiding popover to allow clicking on suggestions
-                    setTimeout(() => {
-                      setIsSearchFocused(false);
-                    }, 150); // 150ms delay
-                  }}
-                  placeholder="Search products..."
-                  className="pl-8"
-                  aria-label="Search products" // Accessibility
-                />
-              </div>
-            </PopoverTrigger>
+    // Update messages for the current conversation
+    setMessages((prevMessages) => ({
+      ...prevMessages,
+      [selectedConversationId]: [
+        ...(prevMessages[selectedConversationId] || []),
+        newMessage,
+      ],
+    }));
 
-            {/* Suggestions Popover Content */}
-            <PopoverContent
-              className="w-[--radix-popover-trigger-width] max-h-[400px] overflow-y-auto p-0 mt-1" // Match trigger width, add scroll, remove padding, add margin-top
-              align="start" // Align to the start (left) of the trigger
-              sideOffset={5} // Small gap between input and popover
-              onOpenAutoFocus={(e) => e.preventDefault()} // Prevent autofocus stealing from input
-            >
-              {loading && search.trim() !== "" ? ( // Show loading only if searching
-                <div className="p-4 text-center text-sm text-muted-foreground">
-                  Loading...
-                </div>
-              ) : (
-                <div className="flex flex-col">
-                  {filteredProducts.map((product) => (
-                    // Use Button/div with onClick instead of Link to prevent full page reload if needed,
-                    // but Link is usually fine and semantically correct here.
-                    <button
-                      key={product.productId} // Use a unique product ID
-                      className="block w-full text-left p-2 hover:bg-accent text-sm rounded-sm"
-                      // Use the handler function
-                      onClick={() => handleSuggestionClick(product.productId)}
-                      // Optional: Add product image/details
-                      // <img src={product.image} alt="" className="w-8 h-8 mr-2 inline-block object-contain"/>
-                    >
-                      {product.name}
-                    </button>
-                  ))}
-                </div>
-              )}
-              {/* Optional: Show 'No results' only if not loading and search has text */}
-              {!loading &&
-                search.trim() !== "" &&
-                filteredProducts.length === 0 && (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    No products found.
-                  </div>
-                )}
-            </PopoverContent>
-          </Popover>
+    // Update the last message in the conversation list
+    setConversations((prevConvos) =>
+      prevConvos.map((convo) =>
+        convo.id === selectedConversationId
+          ? { ...convo, lastMessage: text, timestamp: newMessage.timestamp }
+          : convo,
+      ),
+    );
 
-          {/* Categories Dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">All Categories</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[200px]">
-              {Object.entries(categoryList).map(([key, value]) => (
-                // Wrap DropdownMenuItem with Link for navigation
-                <Link key={key} to={`/category/${key}`}>
-                  <DropdownMenuItem>{value}</DropdownMenuItem>
-                </Link>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+    // TODO: Simulate receiving a reply after a short delay for demo
+    // setTimeout(() => receiveMockReply(selectedConversationId), 1500);
+  };
 
-        {/* --- Right Icons (Cart, Account) --- */}
-        <div className="flex items-center gap-2 ml-auto">
-          <Link to="/cart">
-            {" "}
-            {/* Use Link */}
-            <Button variant="ghost" size="icon" className="relative">
-              <ShoppingCart className="h-5 w-5" />
-              {/* Replace '3' with dynamic cart item count */}
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-                0
-              </span>
-              <span className="sr-only">Cart</span>
-            </Button>
-          </Link>
-          <Link to="/account" className="hidden md:block">
-            {" "}
-            {/* Use Link */}
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Account</span>
-            </Button>
-          </Link>
-        </div>
-      </div>
-    </header>
+  // Filter conversations based on search term
+  const filteredConversations = conversations.filter((convo) =>
+    convo.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
-}
+
+  return (
+    <div className="flex h-screen bg-gray-100 font-sans antialiased">
+      {/* Sidebar */}
+      <aside className="w-1/3 lg:w-1/4 bg-white border-r border-gray-200 flex flex-col">
+        {/* Sidebar Header/Search */}
+        <div className="p-4 border-b border-gray-200">
+          <div className="relative">
+            <input
+              type="text"
+              placeholder="Search..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-gray-100 border border-gray-200 rounded-full focus:outline-none focus:ring-1 focus:ring-green-400 focus:border-transparent text-sm"
+            />
+            {/* Search Icon */}
+            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* Conversation List */}
+        <div className="flex-grow overflow-y-auto p-2">
+          <h2 className="text-xs font-semibold text-gray-500 uppercase px-3 mb-2 mt-2">
+            Conversations
+          </h2>
+          <ul>
+            {filteredConversations.length > 0 ? (
+              filteredConversations.map((convo) => (
+                <ConversationListItem
+                  key={convo.id}
+                  conversation={convo}
+                  isSelected={convo.id === selectedConversationId}
+                  onClick={() => handleSelectConversation(convo.id)}
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500 text-sm mt-4 px-3">
+                No conversations found.
+              </p>
+            )}
+          </ul>
+        </div>
+      </aside>
+
+      {/* Main Chat Area */}
+      <main className="flex-1 flex flex-col bg-white">
+        {selectedConversation ? (
+          <>
+            {/* Chat Header */}
+            <header className="bg-white p-4 border-b border-gray-200 flex justify-between items-center">
+              <div className="flex items-center">
+                <Avatar
+                  src={selectedConversation.avatarUrl}
+                  alt={selectedConversation.name}
+                  size="md"
+                  className="mr-3"
+                />
+                <h2 className="font-semibold text-gray-800">
+                  {selectedConversation.name}
+                </h2>
+              </div>
+              {/* Options Button */}
+              <button className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100">
+                {/* More Options Icon (Inline SVG or from library) */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <circle cx="12" cy="12" r="1"></circle>
+                  <circle cx="19" cy="12" r="1"></circle>
+                  <circle cx="5" cy="12" r="1"></circle>
+                </svg>
+              </button>
+            </header>
+
+            {/* Message List */}
+            <div className="flex-grow overflow-y-auto p-4 bg-gray-50">
+              {currentMessages.map((msg) => (
+                <MessageBubble key={msg.id} message={msg} />
+              ))}
+              {/* Dummy div to target for scrolling */}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <ChatInput onSendMessage={handleSendMessage} />
+          </>
+        ) : (
+          <div className="flex-grow flex items-center justify-center text-gray-500">
+            Select a conversation to start chatting.
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default App; // Export the main component
+//```css
+///* Optional: Add this to your global CSS if you haven't already for better scrollbars */
+///* Customize scrollbar */
+//::-webkit-scrollbar {
+//  width: 6px; /* Width of the scrollbar */
+//  height: 6px; /* Height for horizontal scrollbar */
+//}
+//
+///* Track */
+//::-webkit-scrollbar-track {
+//  background: #f1f1f1; /* Color of the tracking area */
+//  border-radius: 10px;
+//}
+//
+///* Handle */
+//::-webkit-scrollbar-thumb {
+//  background: #c1c1c1; /* Color of the scrollbar handle */
+//  border-radius: 10px;
+//}
+//
+///* Handle on hover */
+//::-webkit-scrollbar-thumb:hover {
+//  background: #a1a1a1; /* Darker color on hover */
+//}
+//
+

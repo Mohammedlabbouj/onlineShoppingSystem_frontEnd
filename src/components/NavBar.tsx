@@ -6,6 +6,9 @@ import {
   Menu,
   MessageCircle as MessageIcon,
 } from "lucide-react";
+import {
+IoCubeOutline as OrderIcon,
+} from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -139,7 +142,9 @@ export default function Navbar() {
         </a>
         <div className="hidden flex-1 md:flex md:gap-x-6">
           <div className="relative flex-1 max-w-md">
+            <Link to={`/product-search/${search}`}>
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            </Link>
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -177,6 +182,12 @@ export default function Navbar() {
               </span>
               <span className="sr-only">Cart</span>
             </Button>
+          </Link>
+          <Link to={"/orders"} >
+          <Button variant="ghost" size="icon">
+            <OrderIcon className="h-5 w-5" />
+            <span className="sr-only">Orders</span>
+          </Button>
           </Link>
           <a href="/account" className="hidden md:block">
             <Button variant="ghost" size="icon">

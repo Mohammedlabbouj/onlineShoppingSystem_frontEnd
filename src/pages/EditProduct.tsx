@@ -1,7 +1,7 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ProductType } from "@/types/product";
-import { getProductFunction } from "@/functions/getProduct"; // Adjust path as needed
+import { getProductFunction } from "@/functions/getProduct"; 
 
 const updateProduct = async (productData: ProductType): Promise<boolean> => {
   try {
@@ -28,7 +28,7 @@ const updateProduct = async (productData: ProductType): Promise<boolean> => {
     return false;
   }
 };
-// --- End Mock API ---
+
 
 function EditProductPage() {
   const { id } = useParams<{ id: string }>(); // Get productId from route params

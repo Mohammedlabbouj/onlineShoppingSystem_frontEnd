@@ -239,6 +239,7 @@ function ProductInfo({ product, reviewsProp }: ProductInfoProps) {
 interface ReviewPopupProp {
   onClose: () => void;
   productId?: number;
+  setReviews?: (reviews: Review[]) => void;
 }
 
 function ReviewPopup({ onClose, productId }: ReviewPopupProp) {
