@@ -48,11 +48,11 @@ const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({ status }) => {
       bgColor = "bg-yellow-100";
       textColor = "text-yellow-800";
       break;
-    case "Shipped":
+    case "SHIPPED":
       bgColor = "bg-blue-100";
       textColor = "text-blue-800";
       break;
-    case "Delivered":
+    case "DELIVERED":
       bgColor = "bg-green-100";
       textColor = "text-green-800";
       break;
@@ -106,7 +106,7 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       {detailsVisible && (
         <div className="p-4">
           {order.items.map((item) => (
-            <OrderItemCard item={item} />
+            <OrderItemCard key={item.orderId} item={item} />
           ))}
         </div>
       )}
@@ -164,25 +164,93 @@ export default function Orders() {
     };
     fetchOrders();
   }, [customerId]);
+  const isTHereany = (status: string) => {
+    return orders.some((order) => order.status === status);
+  };
+
+  const getPendingOrders = () => {
+    return (
+      <>
+        <h1 className="text-xl font-semibold text-gray-800 mb-6">
+          Pending orders
+        </h1>
+
+        {/* List of Orders */}
+        <div className="space-y-6">
+          {isTHereany("PENDING") ? (
+            orders
+              .filter((order) => order.status === "PENDING")
+              .map((order) => (
+                <OrderCard key={order.orderDTOId} order={order} />
+              ))
+          ) : (
+            <p className="text-center text-gray-500">You have no orders yet.</p>
+          )}
+          {/* Add more OrderCard components here if needed */}
+        </div>
+      </>
+    );
+  };
+  const getShippedOrders = () => {
+    return (
+      <>
+        <h1 className="text-xl font-semibold text-gray-800 mb-6">
+          Shipped orders
+        </h1>
+
+        {/* List of Orders */}
+        <div className="space-y-6">
+          {isTHereany("SHIPPED") ? (
+            orders
+              .filter((order) => order.status === "SHIPPED")
+              .map((order) => (
+                <OrderCard key={order.orderDTOId} order={order} />
+              ))
+          ) : (
+            <p className="text-center text-gray-500">
+              You have no orders Shipped yet.
+            </p>
+          )}
+          {/* Add more OrderCard components here if needed */}
+        </div>
+      </>
+    );
+  };
+  const getDeliveredOrders = () => {
+    return (
+      <>
+        <h1 className="text-xl font-semibold text-gray-800 mb-6">
+          Delivered orders
+        </h1>
+
+        {/* List of Orders */}
+        <div className="space-y-6">
+          {isTHereany("DELIVERED") ? (
+            orders
+              .filter((order) => order.status === "DELIVERED")
+              .map((order) => (
+                <OrderCard key={order.orderDTOId} order={order} />
+              ))
+          ) : (
+            <p className="text-center text-gray-500">
+              You have no orders Delivered yet.
+            </p>
+          )}
+          {/* Add more OrderCard components here if needed */}
+        </div>
+      </>
+    );
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen p-4 md:p-8">
       {/* This container simulates the main content area, ignoring the nav bar */}
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-xl font-semibold text-gray-800 mb-6">
-          Your orders
-        </h1>
-
-        {/* List of Orders */}
-        <div className="space-y-6">
-          {orders.length > 0 ? (
-            orders.map((order) => (
-              <OrderCard key={order.orderDTOId} order={order} />
-            ))
-          ) : (
-            <p className="text-center text-gray-500">You have no orders yet.</p>
-          )}
-          {/* Add more OrderCard components here if needed */}
+        {/* Order Sections */}
+        <div className="space-y-8">
+          {getPendingOrders()}
+          {getShippedOrders()}
+          {getDeliveredOrders()}
         </div>
       </div>
     </div>

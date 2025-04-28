@@ -5,6 +5,7 @@ import Dashboard from "@/components/Dashboard";
 import Products from "@/components/ProductsVendor";
 import Reviews from "@/components/ProductReviewSummaryCard";
 import ReviewsModal from "@/components/ReviewsModal";
+import OrdersVendor from "@/pages/OrdersVendor";
 import { getVendor } from "@/functions/getVendor";
 import { Review, ProductType } from "@/types/product";
 import { getProductsByVendorId } from "@/functions/getProductsByid";
@@ -23,7 +24,12 @@ interface VendorInfo {
 }
 
 // Define the possible page types
-type ActivePageType = "Dashboard" | "Products" | "Reviews" | "HotTrends";
+type ActivePageType =
+  | "Dashboard"
+  | "Products"
+  | "Reviews"
+  | "HotTrends"
+  | "Orders";
 
 function VendorDashboard({ handelLogOut }: Props) {
   // --- State for the active page ---
@@ -101,6 +107,9 @@ function VendorDashboard({ handelLogOut }: Props) {
 
       case "Products":
         return <Products />;
+
+      case "Orders":
+        return <OrdersVendor />;
 
       case "Reviews":
         return (

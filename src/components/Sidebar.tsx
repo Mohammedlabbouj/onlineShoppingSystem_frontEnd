@@ -1,8 +1,13 @@
 import React from "react";
 
-type ActivePageType = "Dashboard" | "Products" | "Reviews" | "HotTrendes"; // Add other pages as needed
+type ActivePageType =
+  | "Dashboard"
+  | "Products"
+  | "Reviews"
+  | "HotTrends"
+  | "Orders"; // Add other pages as needed
 interface SidebarProps {
-  activePage: "Dashboard" | "Products" | "Reviews" | "HotTrendes"; // Add other pages as needed
+  activePage: "Dashboard" | "Products" | "Reviews" | "HotTrends" | "Orders"; // Add other pages as needed
   handelLogOut: () => void;
   onNavigate: (page: ActivePageType) => void; // Function to handle navigation
 }
@@ -12,7 +17,7 @@ const Sidebar: React.FC<SidebarProps> = ({
   handelLogOut,
   onNavigate,
 }) => {
-  const navItems = ["Dashboard", "Products", "Reviews", "HotTrends"]; // Add other pages as needed
+  const navItems = ["Dashboard", "Products", "Reviews", "HotTrends", "Orders"]; // Add other pages as needed
   const [showLogout, setShowLogout] = React.useState(false);
 
   const getNavItemClasses = (item: string) => {
