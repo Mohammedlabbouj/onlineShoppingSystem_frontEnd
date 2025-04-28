@@ -1,23 +1,43 @@
 import React, { useEffect, useState } from "react";
 import { getOrders } from "@/functions/getOrders";
 import { Order, OrderItem } from "@/types/orders";
+import { getProductFunction } from "@/functions/getProduct";
+import { ProductType } from "@/types/product";
 
 // --- Helper Components ---
 
 // Order Item Card
 interface OrderItemCardProps {
   item: OrderItem;
+  productId: number;
 }
-const OrderItemCard: React.FC<OrderItemCardProps> = ({ item }) => {
+const OrderItemCard: React.FC<OrderItemCardProps> = ({ item, productId }) => {
+  const [product, setProduct] = useState<ProductType>();
   const defaultImage =
     "https://placehold.co/100x80/F5F5F5/BDBDBD?text=No+Image";
+
+  useEffect(() => {
+    try {
+      const fetchProduct = async () => {
+        const response = await getProductFunction(productId);
+        if (response) {
+          setProduct(response);
+        } else {
+          console.error("No product found or error fetching product.");
+        }
+      };
+      fetchProduct();
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    }
+  }, []);
 
   return (
     <div className="flex items-center space-x-4 py-3 border-b border-gray-200 last:border-b-0">
       {/* Image */}
       <img
-        src={item.imageUrl || defaultImage}
-        alt={item.name}
+        src={product?.image || defaultImage}
+        alt={product?.name}
         className="w-16 h-16 object-contain rounded border border-gray-100 flex-shrink-0 bg-white" // Use object-contain
         onError={(e) => {
           e.currentTarget.src = defaultImage;
@@ -106,7 +126,11 @@ const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
       {detailsVisible && (
         <div className="p-4">
           {order.items.map((item) => (
-            <OrderItemCard key={item.orderId} item={item} />
+            <OrderItemCard
+              key={item.orderId}
+              productId={item.productId}
+              item={item}
+            />
           ))}
         </div>
       )}

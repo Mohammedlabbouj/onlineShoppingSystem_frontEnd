@@ -11,6 +11,7 @@ import {
 import { Stat } from "@/types/vendor";
 import { ProductType } from "@/types/product";
 import { getProductsByVendorId } from "@/functions/getProductsByid";
+import OrdersVendor from "@/pages/OrdersVendor";
 
 export default function Dashboard() {
   const [products, setProducts] = useState<ProductType[]>([]);
@@ -56,12 +57,19 @@ export default function Dashboard() {
     console.log("Add new product clicked");
     navigate("/addProduct");
   };
+  const handleShowAllOrders = ()=>{
+    return (
+    <OrdersVendor />
+    )
+  }
   return (
     <>
       {/* Stats Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
-          <StatCard key={stat.title} stat={stat} />
+          <div key={stat.title} onClick={handleShowAllOrders} className="cursor-pointer">
+          <StatCard  key={stat.title} stat={stat} />
+          </div>
         ))}
       </section>
 

@@ -1,4 +1,4 @@
-export const getProductFunction = async (id: string) => {
+export const getProductFunction = async (id: string | number ) => {
   try {
     const response = await fetch(`http://localhost:9090/api/products/${id}`, {
       method: "GET",

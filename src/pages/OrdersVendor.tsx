@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { getOrders } from "@/functions/getVendorOrders";
 import { Order  , OrderItem} from "@/types/orders";
 import { getCustomer } from "@/functions/getCustomer";
 import { customer } from "@/types/customer";
+import { getProductFunction} from "@/functions/getProduct";
+import { ProductType } from "@/types/product";
 
 
 
@@ -12,20 +14,38 @@ import { customer } from "@/types/customer";
 // Order Item Detail Row (Shown when expanded)
 interface OrderItemDetailRowProps {
   item: OrderItem;
+  productId: number;
   currencySymbol?: string;
 }
 const OrderItemDetailRow: React.FC<OrderItemDetailRowProps> = ({
   item,
   currencySymbol = "$",
 }) => {
+  const [product, setProduct] = useState<ProductType>();
   const defaultImage = "https://placehold.co/100x80/F5F5F5/BDBDBD?text=No+Img";
+  useEffect(()=>{
+    try {
+      const fetchProduct = async () => {
+        const response = await getProductFunction(item.productId as number);
+        if (response) {
+          setProduct(response);
+        } else {
+          console.error("No product found or error fetching product.");
+        }
+      };
+      fetchProduct();
+    }catch (error) {
+      console.error("Error fetching product:", error);
+    }
+    
+  },[])
 
   return (
     <div className="flex items-center space-x-4 py-3 px-4 border-t border-gray-200 bg-white hover:bg-gray-50">
       {/* Image */}
       <img
-        src={item.imageUrl || defaultImage}
-        alt={item.name}
+        src={product?.image || defaultImage}
+        alt={product?.name}
         className="w-12 h-12 object-contain rounded border border-gray-100 flex-shrink-0 bg-white"
         onError={(e) => {
           e.currentTarget.src = defaultImage;
@@ -135,6 +155,7 @@ const PendingOrderRow: React.FC<PendingOrderRowProps> = ({ order }) => {
             <OrderItemDetailRow
               key={item.id}
               item={item}
+              productId={item.productId}
               currencySymbol={currencySymbol}
             />
           ))}

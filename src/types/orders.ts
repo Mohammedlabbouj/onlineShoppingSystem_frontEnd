@@ -12,6 +12,7 @@ export interface OrderItem {
   name: string;
   orderId: number;
   quantity: number;
+  productId: number;
   priceAtPurchase: number;
   imageUrl?: string; // Optional image URL
 }
