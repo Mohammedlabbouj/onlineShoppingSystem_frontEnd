@@ -18,7 +18,7 @@ export default function Dashboard() {
   let navigate = useNavigate();
   const stats: Stat[] = [
     { title: "Total orders", value: 120, icon: IoCartOutline },
-    { title: "Pending Shipping", value: 10, icon: IoSwapHorizontalOutline },
+    { title: "Pending orders", value: 10, icon: IoSwapHorizontalOutline },
     { title: "Top Sales", value: 5, icon: IoPricetagsOutline },
     { title: "Out of Stock", value: 5, icon: IoCubeOutline },
   ];
