@@ -11,6 +11,7 @@ import Account from "@/pages/Account.tsx";
 import Products from "@/pages/Products";
 import CategorySearch from "@/pages/CategorySearch";
 import Test from "@/components/Test.tsx";
+import TestPage from "@/pages/Test";
 import Orders from "@/pages/OrdersCustomer";
 import ProductSearch from "@/pages/ProductSearch";
 
@@ -29,6 +30,16 @@ function CustomerUi({ isAuthenticated, setIsAuthenticated }: CustomerUiProps) {
     <div className={isAuthPage ? "" : "pt-16"}>
       {!isAuthPage && <NavBar />}
       <Routes>
+        <Route
+          path="/testpage"
+          element={
+            isAuthenticated ? (
+              <TestPage />
+            ) : (
+              <Navigate to={"/login"} />
+            )
+          }
+        />
         <Route 
           path = "/orders"
           element={
