@@ -12,15 +12,20 @@ import { Stat } from "@/types/vendor";
 import { ProductType } from "@/types/product";
 import { getProductsByVendorId } from "@/functions/getProductsByid";
 import OrdersVendor from "@/pages/OrdersVendor";
-
+import { Link } from "react-router-dom";
 export default function Dashboard() {
   const [products, setProducts] = useState<ProductType[]>([]);
   let navigate = useNavigate();
   const stats: Stat[] = [
-    { title: "Total orders", value: 120, icon: IoCartOutline },
-    { title: "Pending orders", value: 10, icon: IoSwapHorizontalOutline },
-    { title: "Top Sales", value: 5, icon: IoPricetagsOutline },
-    { title: "Out of Stock", value: 5, icon: IoCubeOutline },
+    { title: "Total orders", link: "/", value: 120, icon: IoCartOutline },
+    {
+      title: "Pending orders",
+      link: "pendingorders",
+      value: 10,
+      icon: IoSwapHorizontalOutline,
+    },
+    { title: "Top Sales", value: 5, link: "/", icon: IoPricetagsOutline },
+    { title: "Out of Stock", link: "/", value: 5, icon: IoCubeOutline },
   ];
   let vendorId = localStorage.getItem("id");
 
@@ -57,19 +62,23 @@ export default function Dashboard() {
     console.log("Add new product clicked");
     navigate("/addProduct");
   };
-  const handleShowAllOrders = ()=>{
-    return (
-    <OrdersVendor />
-    )
-  }
+  const handleShowAllOrders = () => {
+    return <OrdersVendor />;
+  };
   return (
     <>
       {/* Stats Grid */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {stats.map((stat) => (
-          <div key={stat.title} onClick={handleShowAllOrders} className="cursor-pointer">
-          <StatCard  key={stat.title} stat={stat} />
-          </div>
+          <Link to={`${stat.link}`}>
+            <div
+              key={stat.title}
+              onClick={handleShowAllOrders}
+              className="cursor-pointer"
+            >
+              <StatCard key={stat.title} stat={stat} />
+            </div>
+          </Link>
         ))}
       </section>
 
@@ -94,7 +103,7 @@ export default function Dashboard() {
               .reverse()
               .map(
                 (
-                  product, // Display only first 4
+                  product // Display only first 4
                 ) => (
                   <ProductCard
                     key={product.productId}
@@ -102,7 +111,7 @@ export default function Dashboard() {
                     onDelete={handleDeleteProduct}
                     onEdit={handleEditProduct}
                   />
-                ),
+                )
               )}
           </div>
         ) : (

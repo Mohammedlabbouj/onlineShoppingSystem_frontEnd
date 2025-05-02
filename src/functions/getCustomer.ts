@@ -1,5 +1,4 @@
 export const getCustomer = async (customerId:  number) => {
-  console.log("customerId", customerId);
   try {
     const response = await fetch(
       `http://localhost:9090/api/customers/${customerId}`,
@@ -15,7 +14,6 @@ export const getCustomer = async (customerId:  number) => {
       throw new Error("Network response was not ok");
     }
     const data = await response.json();
-    console.log("customer data", data);
     return data;
   } catch (error) {
     console.error("Error fetching vendor:", error);

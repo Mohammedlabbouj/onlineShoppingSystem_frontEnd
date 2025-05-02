@@ -15,12 +15,10 @@ interface Props {
 }
 interface VendorInfo {
   vendorId: number;
-  username: string;
-  email: string;
-  password: string;
-  products: ProductType[];
-  orders: [];
-  payments: [];
+  storeName: number;
+  description: string;
+  storeImage: string;
+  vendorProfileId: number;
 }
 
 // Define the possible page types
@@ -153,9 +151,9 @@ function VendorDashboard({ handelLogOut }: Props) {
         {/* Header Section (remains the same) */}
         <header className="flex flex-col sm:flex-row justify-between items-center mb-8">
           <div className="flex items-center space-x-4 mb-4 sm:mb-0">
-            {storeInfo.pictureUrl ? (
+            {vendorInfo?.storeImage ? (
               <img
-                src={storeInfo.pictureUrl}
+                src={vendorInfo.storeImage}
                 alt="Store"
                 className="w-14 h-14 rounded-full border-2 border-green-500 object-cover"
               />
@@ -165,11 +163,11 @@ function VendorDashboard({ handelLogOut }: Props) {
               </div>
             )}
             <h1 className="text-xl font-semibold text-gray-700">
-              {vendorInfo?.username || "Vendor Name"}
+              {vendorInfo?.storeName || "Vendor Name"}
             </h1>
           </div>
           <span className="text-lg text-gray-800">
-            Welcome {vendorInfo?.username}
+            Welcome {vendorInfo?.storeName}
           </span>
         </header>
 

@@ -8,6 +8,7 @@ export interface Product {
 }
 
 export interface Stat {
+  link : string;
   title: string;
   value: string | number;
   icon: React.ElementType; // Allows passing icon components

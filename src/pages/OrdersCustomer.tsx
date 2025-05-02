@@ -1,280 +1,344 @@
-import React, { useEffect, useState } from "react";
-import { getOrders } from "@/functions/getOrders";
-import { Order, OrderItem } from "@/types/orders";
+import { useEffect, useState } from "react";
 import { getProductFunction } from "@/functions/getProduct";
+import { getOrders } from "@/functions/getOrders";
+import { getAllVendorProfile } from "@/functions/getAllVendorProfile";
+import { Order, OrderItem } from "@/types/orders";
 import { ProductType } from "@/types/product";
+import { VendorProfile } from "@/types/vendorProfile";
+import Loading from "@/components/Loading";
 
-// --- Helper Components ---
-
-// Order Item Card
-interface OrderItemCardProps {
-  item: OrderItem;
-  productId: number;
-}
-const OrderItemCard: React.FC<OrderItemCardProps> = ({ item, productId }) => {
-  const [product, setProduct] = useState<ProductType>();
-  const defaultImage =
-    "https://placehold.co/100x80/F5F5F5/BDBDBD?text=No+Image";
-
-  useEffect(() => {
-    try {
-      const fetchProduct = async () => {
-        const response = await getProductFunction(productId);
-        if (response) {
-          setProduct(response);
-        } else {
-          console.error("No product found or error fetching product.");
-        }
-      };
-      fetchProduct();
-    } catch (error) {
-      console.error("Error fetching product:", error);
-    }
-  }, []);
-
-  return (
-    <div className="flex items-center space-x-4 py-3 border-b border-gray-200 last:border-b-0">
-      {/* Image */}
-      <img
-        src={product?.image || defaultImage}
-        alt={product?.name}
-        className="w-16 h-16 object-contain rounded border border-gray-100 flex-shrink-0 bg-white" // Use object-contain
-        onError={(e) => {
-          e.currentTarget.src = defaultImage;
-        }}
-      />
-      {/* Details */}
-      <div className="flex-grow">
-        <p className="font-semibold text-sm text-gray-800">{item.name}</p>
-        <p className="text-xs text-gray-600">Quantity: {item.quantity}</p>
-        <p className="text-xs text-gray-600">
-          Price: ${item.priceAtPurchase.toFixed(2)}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-// Order Status Badge
-interface OrderStatusBadgeProps {
-  status: Order["status"];
-}
-const OrderStatusBadge: React.FC<OrderStatusBadgeProps> = ({ status }) => {
-  let bgColor = "bg-gray-100";
-  let textColor = "text-gray-700";
-
-  switch (status) {
-    case "PENDING":
-      bgColor = "bg-yellow-100";
-      textColor = "text-yellow-800";
-      break;
-    case "SHIPPED":
-      bgColor = "bg-blue-100";
-      textColor = "text-blue-800";
-      break;
-    case "DELIVERED":
-      bgColor = "bg-green-100";
-      textColor = "text-green-800";
-      break;
-    case "Cancelled":
-      bgColor = "bg-red-100";
-      textColor = "text-red-800";
-      break;
-  }
-
-  return (
-    <span
-      className={`px-3 py-1 text-xs font-medium rounded-full ${bgColor} ${textColor}`}
-    >
-      {status}
-    </span>
-  );
-};
-
-// Order Card
-interface OrderCardProps {
-  order: Order;
-}
-const OrderCard: React.FC<OrderCardProps> = ({ order }) => {
-  const [detailsVisible, setDetailsVisible] = useState(true); // Initially show details as per image
-
-  const toggleDetails = () => {
-    setDetailsVisible(!detailsVisible);
-  };
-
-  const handleMessageClick = () => {
-    alert(`Messaging about Order ${order.orderDTOId}...`); // Placeholder action
-    // Implement actual navigation or chat opening logic here
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
-      {/* Card Header */}
-      <div className="p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 bg-gray-50">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2 sm:mb-0">
-          Order: {order.orderDTOId}
-        </h3>
-        <div className="flex items-center space-x-4">
-          <p className="text-sm font-semibold text-gray-800">
-            ${order.totalAmount.toFixed(2)}
-          </p>
-          <OrderStatusBadge status={order.status} />
-        </div>
-      </div>
-
-      {/* Card Body - Conditionally Rendered Items */}
-      {detailsVisible && (
-        <div className="p-4">
-          {order.items.map((item) => (
-            <OrderItemCard
-              key={item.orderId}
-              productId={item.productId}
-              item={item}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Card Footer - Actions */}
-      <div className="p-4 bg-gray-50 border-t border-gray-200 flex justify-end space-x-3">
-        <button
-          onClick={toggleDetails}
-          className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
-        >
-          {detailsVisible ? "Close Details" : "Show Details"}
-        </button>
-        <button
-          onClick={handleMessageClick}
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500 flex items-center space-x-1"
-        >
-          <span>Message</span>
-          {/* Chat Icon (inline SVG or from library) */}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M18 10c0 3.866-3.582 7-8 7a8.892 8.892 0 01-2.647-.488c-.083-.025-.169-.043-.257-.057a.879.879 0 00-.5-.017c-.307.046-.61.1-.913.161A.9.9 0 014 16.019V13.5a6.96 6.96 0 01-2-4.5C2 5.134 5.582 2 10 2s8 3.134 8 8zm-4.172-3.172a.75.75 0 00-1.06 1.06L13.06 9H7.75a.75.75 0 000 1.5h5.31l-.292.292a.75.75 0 101.06 1.06l1.5-1.5a.75.75 0 000-1.06l-1.5-1.5z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// --- Main Page Component (Example Usage) ---
-export default function Orders() {
+export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
-  // In a real app, you'd fetch a list of orders
-
-  let customerId = localStorage.getItem("id");
+  const [expandedOrderId, setExpandedOrderId] = useState<number | null>(null);
+  const [orderProducts, setOrderProducts] = useState<
+    Record<string, ProductType>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [allVendorProfile, setAllVendorProfile] = useState<
+    Record<string, VendorProfile>
+  >({});
+  const [allVendorProfileLoading, setAllVendorProfileLoading] = useState(true);
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await getOrders(customerId as string);
-        if (response) {
-          setOrders(response);
-        } else {
-          console.error("No orders found");
+        // Using a placeholder customer ID - replace with actual ID in production
+        const data = await getOrders(localStorage.getItem("id") as string);
+
+        if (data) {
+          setOrders(data);
         }
       } catch (error) {
-        console.error("Error fetching orders:", error);
+        console.error("Failed to fetch orders:", error);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchOrders();
-  }, [customerId]);
-  const isTHereany = (status: string) => {
-    return orders.some((order) => order.status === status);
+  }, []);
+
+  useEffect(() => {
+    const fetchVendorProfiles = async () => {
+      try {
+        const vendorProfilePromises = orders.map((order) =>
+          getAllVendorProfile(order.vendorId)
+        );
+        const vendorProfiles = await Promise.all(vendorProfilePromises);
+
+        const vendorProfileMap = vendorProfiles.reduce((acc, profile) => {
+          acc[profile.vendorId] = profile;
+          return acc;
+        }, {} as Record<string, VendorProfile>);
+        console.log("vendorMap : ", vendorProfileMap);
+        setAllVendorProfile(vendorProfileMap);
+        console.log("allVendor : ", allVendorProfile);
+      } catch (error) {
+        console.error("Failed to fetch vendor profiles:", error);
+      } finally {
+        setAllVendorProfileLoading(false);
+      }
+    };
+
+    if (orders.length > 0) {
+      fetchVendorProfiles();
+    }
+  }, [orders]);
+  function getVendorProfile(vendorid: number): string {
+    const vendorProfile = allVendorProfile[vendorid];
+    if (vendorProfile) {
+      return vendorProfile.storeName;
+    } else {
+      return "Loading...";
+    }
+  }
+
+  const fetchProductDetails = async (orderId: number, items: OrderItem[]) => {
+    try {
+      const productPromises = items.map((item) =>
+        getProductFunction(item.productId)
+      );
+      const products = await Promise.all(productPromises);
+
+      const productMap = products.reduce((acc, product, index) => {
+        acc[items[index].productId] = product;
+        return acc;
+      }, {} as Record<string, ProductType>);
+
+      setOrderProducts((prev) => ({ ...prev, ...productMap }));
+    } catch (error) {
+      console.error("Failed to fetch product details:", error);
+    }
   };
 
-  const getPendingOrders = () => {
+  const toggleOrderExpansion = async (orderId: number, items: OrderItem[]) => {
+    if (expandedOrderId === orderId) {
+      setExpandedOrderId(null);
+    } else {
+      setExpandedOrderId(orderId);
+      await fetchProductDetails(orderId, items);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "bg-amber-200 text-amber-800";
+      case "shipping":
+        return "bg-cyan-400 text-cyan-800";
+      case "delivered":
+        return "bg-green-300 text-green-800";
+      default:
+        return "bg-gray-200 text-gray-800";
+    }
+  };
+
+  const groupOrdersByStatus = () => {
+    const grouped: Record<string, Order[]> = {
+      pending: [],
+      shipping: [],
+      delivered: [],
+    };
+
+    orders.forEach((order) => {
+      const status = order.status.toLowerCase();
+      if (grouped[status]) {
+        grouped[status].push(order);
+      } else {
+        grouped.pending.push(order);
+      }
+    });
+
+    return grouped;
+  };
+
+  const groupedOrders = groupOrdersByStatus();
+
+  if (loading) {
     return (
-      <>
-        <h1 className="text-xl font-semibold text-gray-800 mb-6">
-          Pending orders
-        </h1>
-
-        {/* List of Orders */}
-        <div className="space-y-6">
-          {isTHereany("PENDING") ? (
-            orders
-              .filter((order) => order.status === "PENDING")
-              .map((order) => (
-                <OrderCard key={order.orderDTOId} order={order} />
-              ))
-          ) : (
-            <p className="text-center text-gray-500">You have no orders yet.</p>
-          )}
-          {/* Add more OrderCard components here if needed */}
-        </div>
-      </>
+      <div className="flex justify-center items-center h-screen">
+        <Loading />
+      </div>
     );
-  };
-  const getShippedOrders = () => {
-    return (
-      <>
-        <h1 className="text-xl font-semibold text-gray-800 mb-6">
-          Shipped orders
-        </h1>
-
-        {/* List of Orders */}
-        <div className="space-y-6">
-          {isTHereany("SHIPPED") ? (
-            orders
-              .filter((order) => order.status === "SHIPPED")
-              .map((order) => (
-                <OrderCard key={order.orderDTOId} order={order} />
-              ))
-          ) : (
-            <p className="text-center text-gray-500">
-              You have no orders Shipped yet.
-            </p>
-          )}
-          {/* Add more OrderCard components here if needed */}
-        </div>
-      </>
-    );
-  };
-  const getDeliveredOrders = () => {
-    return (
-      <>
-        <h1 className="text-xl font-semibold text-gray-800 mb-6">
-          Delivered orders
-        </h1>
-
-        {/* List of Orders */}
-        <div className="space-y-6">
-          {isTHereany("DELIVERED") ? (
-            orders
-              .filter((order) => order.status === "DELIVERED")
-              .map((order) => (
-                <OrderCard key={order.orderDTOId} order={order} />
-              ))
-          ) : (
-            <p className="text-center text-gray-500">
-              You have no orders Delivered yet.
-            </p>
-          )}
-          {/* Add more OrderCard components here if needed */}
-        </div>
-      </>
-    );
-  };
+  }
 
   return (
-    <div className="bg-gray-100 min-h-screen p-4 md:p-8">
-      {/* This container simulates the main content area, ignoring the nav bar */}
-      <div className="max-w-4xl mx-auto">
-        {/* Order Sections */}
-        <div className="space-y-8">
-          {getPendingOrders()}
-          {getShippedOrders()}
-          {getDeliveredOrders()}
+    <div className="max-w-6xl mx-auto p-4 space-y-6">
+      {/* Pending Orders Section */}
+      <div className="rounded-lg overflow-hidden border border-gray-200">
+        <div className="bg-emerald-500 text-white p-[10px] mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">pending orders</h2>
+        </div>
+
+        <div className="space-y-4 p-4">
+          {groupedOrders.pending.map((order) => (
+            <div
+              key={order.orderDTOId}
+              className="border border-gray-200 rounded-lg"
+            >
+              <div
+                className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() =>
+                  toggleOrderExpansion(order.orderDTOId, order.items)
+                }
+              >
+                <div className="font-medium">
+                  {" "}
+                  {getVendorProfile(order.vendorId)}{" "}
+                </div>
+                <div>{order.date ? order.date : "no date...!"}</div>
+                <div>{order.totalAmount} </div>
+                <div className="flex justify-end">
+                  <span className="px-4 py-1 rounded-full bg-amber-200 text-amber-800 font-medium">
+                    pending
+                  </span>
+                </div>
+              </div>
+
+              {expandedOrderId === order.orderDTOId && (
+                <div className="p-4 bg-gray-50 border-t border-gray-200">
+                  {order.items.map((item) => {
+                    const product = orderProducts[item.productId];
+                    return (
+                      <div
+                        key={item.orderId}
+                        className="grid grid-cols-4 py-4 items-center border-b border-gray-200 last:border-0"
+                      >
+                        <div className="flex justify-center">
+                          {product && (
+                            <img
+                              src={
+                                product.image ||
+                                "/placeholder.svg?height=80&width=80"
+                              }
+                              alt={product.name}
+                              width={80}
+                              height={80}
+                              className="object-contain"
+                            />
+                          )}
+                        </div>
+                        <div> {product ? product.name : "Loading..."} </div>
+                        <div>{item.quantity} </div>
+                        <div>{item.priceAtPurchase} </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Shipping Orders Section */}
+      <div className="rounded-lg overflow-hidden border border-gray-200">
+        <div className="bg-emerald-500 text-white p-[10px] mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Shipping Orders</h2>
+        </div>
+        <div className="space-y-4 p-4">
+          {groupedOrders.shipping.map((order) => (
+            <div
+              key={order.orderDTOId}
+              className="border border-gray-200 rounded-lg"
+            >
+              <div
+                className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() =>
+                  toggleOrderExpansion(order.orderDTOId, order.items)
+                }
+              >
+                <div className="font-medium">
+                  {" "}
+                  {getVendorProfile(order.vendorId)}{" "}
+                </div>
+                <div>{order.date ? order.date : "no date...!"}</div>
+                <div>{order.totalAmount} </div>
+                <div className="flex justify-end">
+                  <span className="px-4 py-1 rounded-full bg-amber-200 text-amber-800 font-medium">
+                    pending
+                  </span>
+                </div>
+              </div>
+
+              {expandedOrderId === order.orderDTOId && (
+                <div className="p-4 bg-gray-50 border-t border-gray-200">
+                  {order.items.map((item) => {
+                    const product = orderProducts[item.productId];
+                    return (
+                      <div
+                        key={item.orderId}
+                        className="grid grid-cols-4 py-4 items-center border-b border-gray-200 last:border-0"
+                      >
+                        <div className="flex justify-center">
+                          {product && (
+                            <img
+                              src={
+                                product.image ||
+                                "/placeholder.svg?height=80&width=80"
+                              }
+                              alt={product.name}
+                              width={80}
+                              height={80}
+                              className="object-contain"
+                            />
+                          )}
+                        </div>
+                        <div> {product ? product.name : "Loading..."} </div>
+                        <div>{item.quantity} </div>
+                        <div>{item.priceAtPurchase} </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Delivered Orders Section */}
+      <div className="rounded-lg overflow-hidden border border-gray-200">
+        <div className="bg-emerald-500 text-white p-[10px] mb-4 flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Delivered Orders</h2>
+        </div>
+        <div className="space-y-4 p-4">
+          {groupedOrders.delivered.map((order) => (
+            <div
+              key={order.orderDTOId}
+              className="border border-gray-200 rounded-lg"
+            >
+              <div
+                className="grid grid-cols-4 p-4 cursor-pointer hover:bg-gray-50"
+                onClick={() =>
+                  toggleOrderExpansion(order.orderDTOId, order.items)
+                }
+              >
+                <div className="font-medium">
+                  {" "}
+                  {getVendorProfile(order.vendorId)}{" "}
+                </div>
+                <div>{order.date ? order.date : "no date...!"}</div>
+                <div>{order.totalAmount} </div>
+                <div className="flex justify-end">
+                  <span className="px-4 py-1 rounded-full bg-amber-200 text-amber-800 font-medium">
+                    pending
+                  </span>
+                </div>
+              </div>
+
+              {expandedOrderId === order.orderDTOId && (
+                <div className="p-4 bg-gray-50 border-t border-gray-200">
+                  {order.items.map((item) => {
+                    const product = orderProducts[item.productId];
+                    return (
+                      <div
+                        key={item.orderId}
+                        className="grid grid-cols-4 py-4 items-center border-b border-gray-200 last:border-0"
+                      >
+                        <div className="flex justify-center">
+                          {product && (
+                            <img
+                              src={
+                                product.image ||
+                                "/placeholder.svg?height=80&width=80"
+                              }
+                              alt={product.name}
+                              width={80}
+                              height={80}
+                              className="object-contain"
+                            />
+                          )}
+                        </div>
+                        <div> {product ? product.name : "Loading..."} </div>
+                        <div>{item.quantity} </div>
+                        <div>{item.priceAtPurchase} </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          ))}
         </div>
       </div>
     </div>

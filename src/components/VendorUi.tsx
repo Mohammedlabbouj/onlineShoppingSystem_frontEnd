@@ -4,6 +4,9 @@ import Login from "@/pages/Loging";
 import Signup from "@/pages/SingUp";
 import AddProduct from "@/pages/AddProduct";
 import EditProduct from "@/pages/EditProduct";
+import TestPage from "@/pages/Test";
+import PendingOrders from "@/pages/PendingOrders";
+
 interface VendorUiProps {
   isAuthenticated: boolean;
   setIsAuthenticated: (isAuthenticated: boolean) => void;
@@ -20,6 +23,17 @@ export default function VendorUi({
   return (
     <div>
       <Routes>
+        <Route
+          path="/pendingorders"
+          element={
+            isAuthenticated ? <PendingOrders /> : <Navigate to={"/login"} />
+          }
+        />
+        <Route
+          path="/testpage"
+          element={isAuthenticated ? <TestPage /> : <Navigate to={"/login"} />}
+        />
+
         <Route
           path="/"
           element={
